@@ -1,6 +1,6 @@
 package com.example.confirmationletter;
 
-import com.example.StringUtils;
+import com.example.record.service.impl.StringUtils;
 import com.example.dao.CurrencyDao;
 import com.example.domain.*;
 import com.example.domain.Currency;
