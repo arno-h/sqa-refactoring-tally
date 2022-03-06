@@ -10,9 +10,9 @@ public class Constants {
     static public final String CURRENCY_USD = "USD";
     static public final String CURRENCY_EURO = "EUR";
 
-    static public final String DEBIT = "debit";
+    static public final String DEBIT = "-";
     static public final String DEBITING = "debiting";
-    static public final String CREDIT = "credit";
+    static public final String CREDIT = "+";
     static public final String CREDITING = "crediting";
     static public final String TRUE = "true";
     static public final String RBTT_BANK_ALTERNATE = "rbtt";

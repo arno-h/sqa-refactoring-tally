@@ -1,16 +1,16 @@
 package com.example.confirmationletter;
 
-import com.example.record.service.impl.StringUtils;
 import com.example.dao.CurrencyDao;
-import com.example.domain.*;
 import com.example.domain.Currency;
+import com.example.domain.*;
 import com.example.record.domain.TempRecord;
 import com.example.record.service.impl.Constants;
+import com.example.record.service.impl.StringUtils;
 
 import java.math.BigDecimal;
 import java.util.*;
 
-public class ConfirmationLetter {
+public class ConfirmationLetterTally {
 
     // private static Log logger = LogFactory.getLog(ConfirmationLetterGenerator.class);
     @SuppressWarnings("unused")
@@ -23,9 +23,36 @@ public class ConfirmationLetter {
     private String type;
     private CurrencyDao currencyDao;
 
-    // Calculate sum amount from faultyAccountnumber list
+    public Map<String, BigDecimal> calculateAmounts(
+            Client client,
+            List<Record> records,
+            CurrencyDao currencyDao,
+            List<com.example.record.domain.FaultRecord> faultyRecords,
+            List<TempRecord> faultyAccountNumberRecordList,
+            List<TempRecord> sansDuplicateFaultRecordsList,
+            Map<Integer, BatchTotal> batchTotals
+    ) {
+        Map<String, BigDecimal> result = calculateRetrieveAmounts(records, faultyRecords,
+                client, faultyAccountNumberRecordList, sansDuplicateFaultRecordsList);
+//        List<AmountAndRecordsPerBank> aarpbList = amountAndRecords(records, Constants.DEBITING);
+//        BigDecimal debiting = BigDecimal.ZERO;
+//        for (AmountAndRecordsPerBank aarpb: aarpbList) {
+//            debiting = debiting.add(aarpb.getAmount());
+//        }
+//        result.put("DebitingAmount", debiting);
+//        aarpbList = amountAndRecords(records, Constants.CREDITING);
+//        BigDecimal crediting = BigDecimal.ZERO;
+//        for (AmountAndRecordsPerBank aarpb: aarpbList) {
+//            crediting = crediting.add(aarpb.getAmount());
+//        }
+//        result.put("CreditingAmount", crediting);
+        result.put("CreditBatchTotal", creditBatchTotal(batchTotals, client));
+        result.put("DebitBatchTotal", debitBatchTotal(batchTotals, client));
+        return result;
+    }
 
-    public Map<String, BigDecimal> calculateAmountsFaultyAccountNumber(
+    // Calculate sum amount from faultyAccountnumber list
+    private Map<String, BigDecimal> calculateAmountsFaultyAccountNumber(
             List<TempRecord> faultyAccountNumberRecordList, Client client) {
         Map<String, BigDecimal> retrievedAmountsFaultyAccountNumber = new HashMap<String, BigDecimal>();
 
@@ -112,7 +139,7 @@ public class ConfirmationLetter {
         return retrievedAmountsFaultyAccountNumber;
     }
 
-    public Map<String, BigDecimal> calculateRetrieveAmounts(
+    private Map<String, BigDecimal> calculateRetrieveAmounts(
             List<Record> records,
             List<com.example.record.domain.FaultRecord> faultyRecords,
             Client client,
@@ -406,8 +433,8 @@ public class ConfirmationLetter {
         return retrievedAmounts;
     }
 
-    public BigDecimal creditBatchTotal(Map<Integer, BatchTotal> batchTotals,
-                                       Client client) {
+    private BigDecimal creditBatchTotal(Map<Integer, BatchTotal> batchTotals,
+                                        Client client) {
         Double sum = new Double(0);
         Iterator<BatchTotal> itr = batchTotals.values().iterator();
         while (itr.hasNext()) {
@@ -419,8 +446,8 @@ public class ConfirmationLetter {
         return new BigDecimal(d);
     }
 
-    public BigDecimal debitBatchTotal(Map<Integer, BatchTotal> batchTotals,
-                                      Client client) {
+    private BigDecimal debitBatchTotal(Map<Integer, BatchTotal> batchTotals,
+                                       Client client) {
         Double sum = new Double(0);
         Iterator<BatchTotal> itr = batchTotals.values().iterator();
         while (itr.hasNext()) {
