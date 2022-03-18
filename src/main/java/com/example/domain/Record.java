@@ -3,11 +3,11 @@ package com.example.domain;
 import java.math.BigDecimal;
 
 public class Record extends TempRecord {
-    Bank bank;
-    String beneficiaryAccountNumber;
-    String beneficiaryName;
-    Integer feeRecord;
-    Integer isCounterTransferRecord;
+    final Bank bank;
+    final String beneficiaryAccountNumber;
+    final String beneficiaryName;
+    final Integer feeRecord;
+    final Integer isCounterTransferRecord;
 
     public Record(Integer feeRecord, String sign, Currency currency, BigDecimal amount,
                   Integer isCounterTransferRecord, String beneficiaryAccountNumber,

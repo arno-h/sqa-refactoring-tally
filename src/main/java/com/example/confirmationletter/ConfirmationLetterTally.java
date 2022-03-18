@@ -21,7 +21,7 @@ public class ConfirmationLetterTally {
             Map<Integer, BatchTotal> batchTotals
     ) {
         Map<String, BigDecimal> result = calculateRetrieveAmounts(
-                records, client, faultyAccountNumberRecordList, sansDuplicateFaultRecordsList);
+                client, records, faultyAccountNumberRecordList, sansDuplicateFaultRecordsList);
         result.put("CreditBatchTotal", batchTotalSum(
                 batchTotals.values(), client.getAmountDivider(), BatchTotal::getCreditValue));
         result.put("DebitBatchTotal", batchTotalSum(
@@ -30,8 +30,8 @@ public class ConfirmationLetterTally {
     }
 
     private Map<String, BigDecimal> calculateRetrieveAmounts(
-            List<Record> records,
             Client client,
+            List<Record> records,
             List<TempRecord> faultyAccountNumberRecordList,
             List<TempRecord> sansDuplicateFaultRecordsList) {
 
@@ -46,9 +46,9 @@ public class ConfirmationLetterTally {
 
     private Map<String, BigDecimal> counterTransferAmounts(List<Record> records) {
         TallyBuilder recordAmountTally = new TallyBuilder();
-        for (Record record : records) {
-            if (record.isFeeRecord()) {
-                recordAmountTally.add(record);
+        for (Record rec : records) {
+            if (rec.isFeeRecord()) {
+                recordAmountTally.add(rec);
             }
         }
 
@@ -67,9 +67,9 @@ public class ConfirmationLetterTally {
         Map<String, BigDecimal> retrievedAmounts = new HashMap<>();
         TallyBuilder recordAmountTally = new TallyBuilder();
 
-        for (Record record : records) {
-            if (!record.isCounterTransferRecord() && !record.isFeeRecord()) {
-                recordAmountTally.add(record);
+        for (Record rec : records) {
+            if (!rec.isCounterTransferRecord() && !rec.isFeeRecord()) {
+                recordAmountTally.add(rec);
             }
         }
 

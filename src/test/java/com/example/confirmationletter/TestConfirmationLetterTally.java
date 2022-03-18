@@ -1,7 +1,6 @@
 package com.example.confirmationletter;
 
 import com.example.domain.*;
-import com.example.domain.TempRecord;
 import com.example.service.impl.Constants;
 import org.junit.Assert;
 import org.junit.Test;

@@ -6,11 +6,16 @@ import com.example.service.impl.Constants;
 import java.util.Map;
 
 public class CurrencyDao {
-    static public String retrieveCurrencyDefault(Map<String, String> profile) {
+
+    private CurrencyDao() {
+        throw new IllegalStateException("Utility class");
+    }
+
+    public static String retrieveCurrencyDefault(Map<String, String> profile) {
         return profile.get("defaultCurrency");
     }
 
-    static public Currency retrieveCurrencyOnId(Integer id) {
+    public static Currency retrieveCurrencyOnId(Integer id) {
         if (id.equals(Constants.EUR_CURRENCY_CODE)) {
             return new Currency(Constants.EUR_CURRENCY_CODE, Constants.CURRENCY_EURO);
         }

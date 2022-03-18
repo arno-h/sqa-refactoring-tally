@@ -1,6 +1,5 @@
 package com.example.confirmationletter;
 
-import com.example.domain.Record;
 import com.example.domain.TempRecord;
 import com.example.service.impl.Constants;
 
@@ -14,25 +13,25 @@ class TallyBuilder {
     BigDecimal debitUSD = BigDecimal.ZERO;
     BigDecimal debitEUR = BigDecimal.ZERO;
 
-    void add(TempRecord record) {
-        if (record.getCurrencyCode().equals(Constants.FL_CURRENCY_CODE)
-                || record.getCurrencyCode().equals(Constants.FL_CURRENCY_CODE_FOR_WEIRD_BANK)) {
-            if (record.isDebit()) {
-                debitFL = record.getAmount().add(debitFL);
+    void add(TempRecord tempRecord) {
+        if (tempRecord.getCurrencyCode().equals(Constants.FL_CURRENCY_CODE)
+                || tempRecord.getCurrencyCode().equals(Constants.FL_CURRENCY_CODE_FOR_WEIRD_BANK)) {
+            if (tempRecord.isDebit()) {
+                debitFL = tempRecord.getAmount().add(debitFL);
             } else {
-                creditFL = record.getAmount().add(creditFL);
+                creditFL = tempRecord.getAmount().add(creditFL);
             }
-        } else if (record.getCurrencyCode().equals(Constants.USD_CURRENCY_CODE)) {
-            if (record.isDebit()) {
-                debitUSD = record.getAmount().add(debitUSD);
+        } else if (tempRecord.getCurrencyCode().equals(Constants.USD_CURRENCY_CODE)) {
+            if (tempRecord.isDebit()) {
+                debitUSD = tempRecord.getAmount().add(debitUSD);
             } else {
-                creditUSD = record.getAmount().add(creditUSD);
+                creditUSD = tempRecord.getAmount().add(creditUSD);
             }
-        } else if (record.getCurrencyCode().equals(Constants.EUR_CURRENCY_CODE)) {
-            if (record.isDebit()) {
-                debitEUR = record.getAmount().add(debitEUR);
+        } else if (tempRecord.getCurrencyCode().equals(Constants.EUR_CURRENCY_CODE)) {
+            if (tempRecord.isDebit()) {
+                debitEUR = tempRecord.getAmount().add(debitEUR);
             } else {
-                creditEUR = record.getAmount().add(creditEUR);
+                creditEUR = tempRecord.getAmount().add(creditEUR);
             }
         }
     }

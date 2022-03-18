@@ -3,8 +3,8 @@ package com.example.domain;
 import java.math.BigDecimal;
 
 public class BatchTotal {
-    BigDecimal creditValue;
-    BigDecimal creditCounterValueForDebit;
+    final BigDecimal creditValue;
+    final BigDecimal creditCounterValueForDebit;
 
     public BatchTotal(BigDecimal creditValue, BigDecimal creditCounterValueForDebit) {
         this.creditValue = creditValue;

@@ -6,10 +6,10 @@ import java.math.BigDecimal;
 import java.util.Map;
 
 public class Client {
-    Map<String, String> profile;
-    String creditDebit;
-    String counterTransfer;
-    String amountDivider;
+    final Map<String, String> profile;
+    final String creditDebit;
+    final String counterTransfer;
+    final String amountDivider;
 
     public Client(Map<String, String> profile, String creditDebit,
                   String counterTransfer, String amountDivider) {

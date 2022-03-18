@@ -5,8 +5,8 @@ import com.example.service.impl.Constants;
 import java.math.BigDecimal;
 
 public class TempRecord {
+    final Currency currency;
     String sign;
-    Currency currency;
     BigDecimal amount;
 
     public TempRecord(String sign, Currency currency, BigDecimal amount) {
