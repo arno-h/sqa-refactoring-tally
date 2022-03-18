@@ -1,56 +1,72 @@
 package com.example.confirmationletter;
 
 import com.example.domain.TempRecord;
-import com.example.service.impl.Constants;
 
 import java.math.BigDecimal;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Map;
+import java.util.Set;
 
 class TallyBuilder {
-    BigDecimal creditFL = BigDecimal.ZERO;
-    BigDecimal creditUSD = BigDecimal.ZERO;
-    BigDecimal creditEUR = BigDecimal.ZERO;
-    BigDecimal debitFL = BigDecimal.ZERO;
-    BigDecimal debitUSD = BigDecimal.ZERO;
-    BigDecimal debitEUR = BigDecimal.ZERO;
+    private static class DecimalMap {
+        Map<String, BigDecimal> amountMap = new HashMap<>();
 
-    void add(TempRecord tempRecord) {
-        if (tempRecord.getCurrencyCode().equals(Constants.FL_CURRENCY_CODE)
-                || tempRecord.getCurrencyCode().equals(Constants.FL_CURRENCY_CODE_FOR_WEIRD_BANK)) {
-            if (tempRecord.isDebit()) {
-                debitFL = tempRecord.getAmount().add(debitFL);
-            } else {
-                creditFL = tempRecord.getAmount().add(creditFL);
+        void add(String currencyName, BigDecimal amount) {
+            BigDecimal current = amountMap.getOrDefault(currencyName, BigDecimal.ZERO);
+            amountMap.put(currencyName, current.add(amount));
+        }
+
+        void addAll(DecimalMap other) {
+            Set<String> currencyNames = new HashSet<>(amountMap.keySet());
+            currencyNames.addAll(other.amountMap.keySet());
+            for (String currencyName : currencyNames) {
+                amountMap.put(currencyName, amountMap.getOrDefault(currencyName, BigDecimal.ZERO).add(
+                        other.amountMap.getOrDefault(currencyName, BigDecimal.ZERO)));
             }
-        } else if (tempRecord.getCurrencyCode().equals(Constants.USD_CURRENCY_CODE)) {
-            if (tempRecord.isDebit()) {
-                debitUSD = tempRecord.getAmount().add(debitUSD);
-            } else {
-                creditUSD = tempRecord.getAmount().add(creditUSD);
-            }
-        } else if (tempRecord.getCurrencyCode().equals(Constants.EUR_CURRENCY_CODE)) {
-            if (tempRecord.isDebit()) {
-                debitEUR = tempRecord.getAmount().add(debitEUR);
-            } else {
-                creditEUR = tempRecord.getAmount().add(creditEUR);
+        }
+
+        void subtractAll(DecimalMap other) {
+            Set<String> currencyNames = new HashSet<>(amountMap.keySet());
+            currencyNames.addAll(other.amountMap.keySet());
+            for (String currencyName : currencyNames) {
+                amountMap.put(currencyName, amountMap.getOrDefault(currencyName, BigDecimal.ZERO).subtract(
+                        other.amountMap.getOrDefault(currencyName, BigDecimal.ZERO)));
             }
         }
     }
 
+    DecimalMap debit = new DecimalMap();
+    DecimalMap credit = new DecimalMap();
+
+    void add(TempRecord tempRecord) {
+        String currencyType = tempRecord.getCurrency().getCurrencyType();
+        if (tempRecord.isDebit()) {
+            debit.add(currencyType, tempRecord.getAmount());
+        } else {
+            credit.add(currencyType, tempRecord.getAmount());
+        }
+    }
+
     void addTally(TallyBuilder other) {
-        creditFL = creditFL.add(other.creditFL);
-        creditUSD = creditUSD.add(other.creditUSD);
-        creditEUR = creditEUR.add(other.creditEUR);
-        debitFL = debitFL.add(other.debitFL);
-        debitUSD = debitUSD.add(other.debitUSD);
-        debitEUR = debitEUR.add(other.debitEUR);
+        credit.addAll(other.credit);
+        debit.addAll(other.debit);
     }
 
     void subtractTally(TallyBuilder other) {
-        creditFL = creditFL.subtract(other.creditFL);
-        creditUSD = creditUSD.subtract(other.creditUSD);
-        creditEUR = creditEUR.subtract(other.creditEUR);
-        debitFL = debitFL.subtract(other.debitFL);
-        debitUSD = debitUSD.subtract(other.debitUSD);
-        debitEUR = debitEUR.subtract(other.debitEUR);
+        credit.subtractAll(other.credit);
+        debit.subtractAll(other.debit);
+    }
+
+    Map<String, BigDecimal> getDebitVsCreditMap() {
+        DecimalMap result = new DecimalMap();
+        result.addAll(debit);
+        result.subtractAll(credit);
+        result.amountMap.replaceAll((type, amount) -> amount.abs());
+        return result.amountMap;
+    }
+
+    Map <String, BigDecimal> getDebitMap() {
+        return debit.amountMap;
     }
 }

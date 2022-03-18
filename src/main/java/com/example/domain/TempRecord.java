@@ -27,8 +27,8 @@ public class TempRecord {
         this.sign = sign;
     }
 
-    public Integer getCurrencyCode() {
-        return currency.getCode();
+    public Currency getCurrency() {
+        return currency;
     }
 
     public void setCurrencyCode(Integer currencyCode) {

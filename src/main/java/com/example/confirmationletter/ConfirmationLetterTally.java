@@ -2,12 +2,10 @@ package com.example.confirmationletter;
 
 import com.example.dao.CurrencyDao;
 import com.example.domain.*;
-import com.example.service.impl.Constants;
 import com.example.service.impl.StringUtils;
 
 import java.math.BigDecimal;
 import java.util.Collection;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -51,22 +49,13 @@ public class ConfirmationLetterTally {
                 recordAmountTally.add(rec);
             }
         }
-
-        Map<String, BigDecimal> retrievedAmounts = new HashMap<>();
-        retrievedAmounts.put(Constants.CURRENCY_EURO, recordAmountTally.debitEUR);
-        retrievedAmounts.put(Constants.CURRENCY_USD, recordAmountTally.debitUSD);
-        retrievedAmounts.put(Constants.CURRENCY_FL, recordAmountTally.debitFL);
-
-        return retrievedAmounts;
+        return recordAmountTally.getDebitMap();
     }
 
     private Map<String, BigDecimal> unbalancedAmounts(List<Record> records,
                                                       List<TempRecord> faultyAccountNumberRecordList,
                                                       List<TempRecord> sansDuplicateFaultRecordsList) {
-
-        Map<String, BigDecimal> retrievedAmounts = new HashMap<>();
         TallyBuilder recordAmountTally = new TallyBuilder();
-
         for (Record rec : records) {
             if (!rec.isCounterTransferRecord() && !rec.isFeeRecord()) {
                 recordAmountTally.add(rec);
@@ -85,16 +74,7 @@ public class ConfirmationLetterTally {
 
         recordAmountTally.addTally(sansDupRecTally);
         recordAmountTally.subtractTally(faultyAccountTally);
-
-        BigDecimal recordAmountFL = recordAmountTally.debitFL.subtract(recordAmountTally.creditFL).abs();
-        BigDecimal recordAmountUSD = recordAmountTally.debitUSD.subtract(recordAmountTally.creditUSD).abs();
-        BigDecimal recordAmountEUR = recordAmountTally.debitEUR.subtract(recordAmountTally.creditEUR).abs();
-
-        retrievedAmounts.put(Constants.CURRENCY_EURO, recordAmountEUR);
-        retrievedAmounts.put(Constants.CURRENCY_USD, recordAmountUSD);
-        retrievedAmounts.put(Constants.CURRENCY_FL, recordAmountFL);
-
-        return retrievedAmounts;
+        return recordAmountTally.getDebitVsCreditMap();
     }
 
     private void fixCurrencyAndSign(List<TempRecord> tempRecordList, Client client) {
@@ -102,7 +82,7 @@ public class ConfirmationLetterTally {
             if (tempRecord.getSign() == null || StringUtils.isBlank(tempRecord.getSign())) {
                 tempRecord.setSign(client.getCreditDebit());
             }
-            if (tempRecord.getCurrencyCode() == null) {
+            if (tempRecord.getCurrency().getCode() == null) {
                 String currencyId = CurrencyDao.retrieveCurrencyDefault(client.getProfile());
                 Currency currency = CurrencyDao.retrieveCurrencyOnId(Integer.valueOf(currencyId));
                 tempRecord.setCurrencyCode(currency.getCode());
