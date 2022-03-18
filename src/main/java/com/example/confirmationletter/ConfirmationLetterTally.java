@@ -58,15 +58,13 @@ public class ConfirmationLetterTally {
                 } else {
                     creditFL = amount.add(creditFL);
                 }
-            }
-            else if (currencyCode.equals(Constants.USD_CURRENCY_CODE)) {
+            } else if (currencyCode.equals(Constants.USD_CURRENCY_CODE)) {
                 if (isDebit) {
                     debitUSD = amount.add(debitUSD);
                 } else {
                     creditUSD = amount.add(creditUSD);
                 }
-            }
-            else if (currencyCode.equals(Constants.EUR_CURRENCY_CODE)) {
+            } else if (currencyCode.equals(Constants.EUR_CURRENCY_CODE)) {
                 if (isDebit) {
                     debitEUR = amount.add(debitEUR);
                 } else {
@@ -74,6 +72,94 @@ public class ConfirmationLetterTally {
                 }
             }
         }
+    }
+
+    private Map<String, BigDecimal> calculateRetrieveAmounts(
+            List<Record> records,
+            Client client,
+            List<TempRecord> faultyAccountNumberRecordList,
+            List<TempRecord> sansDuplicateFaultRecordsList) {
+
+        if (client.getCounterTransfer().equalsIgnoreCase(Constants.TRUE)) {
+            return counterTransferAmounts(records);
+        } else {
+            return unbalancedAmounts(records, client, faultyAccountNumberRecordList, sansDuplicateFaultRecordsList);
+        }
+    }
+
+    private Map<String, BigDecimal>  counterTransferAmounts(List<Record> records) {
+        TallyBuilder recordAmountTally = new TallyBuilder();
+        for (Record record : records) {
+            if (record.getFeeRecord() != 1) {
+                recordAmountTally.addRecord(record);
+            }
+        }
+
+        Map<String, BigDecimal> retrievedAmounts = new HashMap<>();
+        retrievedAmounts.put(Constants.CURRENCY_EURO, recordAmountTally.debitEUR);
+        retrievedAmounts.put(Constants.CURRENCY_USD, recordAmountTally.debitUSD);
+        retrievedAmounts.put(Constants.CURRENCY_FL, recordAmountTally.debitFL);
+
+        return retrievedAmounts;
+    }
+
+    private Map<String, BigDecimal> unbalancedAmounts(List<Record> records, Client client,
+                                                      List<TempRecord> faultyAccountNumberRecordList,
+                                                      List<TempRecord> sansDuplicateFaultRecordsList) {
+
+        Map<String, BigDecimal> retrievedAmounts = new HashMap<>();
+        TallyBuilder recordAmountTally = new TallyBuilder();
+
+        for (Record record : records) {
+            if (record.getIsCounterTransferRecord().compareTo(0) == 0
+                    && record.getFeeRecord().compareTo(0) == 0) {
+                recordAmountTally.addRecord(record);
+            }
+        }
+
+        // Sansduplicate
+        TallyBuilder sansDupRecTally = new TallyBuilder();
+        for (TempRecord sansDupRec : sansDuplicateFaultRecordsList) {
+            Integer currencyCode = sansDupRec.getCurrencyCode();
+            if (sansDupRec.getSign() == null) {
+                String sign = client.getCreditDebit();
+                sansDupRec.setSign(sign);
+            }
+            if (currencyCode == null) {
+                String currencyId = currencyDao.retrieveCurrencyDefault(client.getProfile());
+                Currency currency = currencyDao.retrieveCurrencyOnId(Integer.valueOf(currencyId));
+                sansDupRec.setCurrencyCode(currency.getCode());
+            } else {
+                sansDupRecTally.addTempRecord(sansDupRec);
+            }
+        }
+
+        TallyBuilder retrievedFaultyAmounts = calculateAmountsFaultyAccountNumber(
+                faultyAccountNumberRecordList, client);
+        BigDecimal totalDebitFL = recordAmountTally.debitFL.add(sansDupRecTally.debitFL);
+        totalDebitFL = totalDebitFL.subtract(retrievedFaultyAmounts.debitFL);
+        BigDecimal totalCreditFL = recordAmountTally.creditFL.add(sansDupRecTally.creditFL);
+        totalCreditFL = totalCreditFL.subtract(retrievedFaultyAmounts.creditFL);
+
+        BigDecimal totalDebitUSD = recordAmountTally.debitUSD.add(sansDupRecTally.debitUSD);
+        totalDebitUSD = totalDebitUSD.subtract(retrievedFaultyAmounts.debitUSD);
+        BigDecimal totalCreditUSD = recordAmountTally.creditUSD.add(sansDupRecTally.creditUSD);
+        totalCreditUSD = totalCreditUSD.subtract(retrievedFaultyAmounts.creditUSD);
+
+        BigDecimal totalDebitEUR = recordAmountTally.debitEUR.add(sansDupRecTally.debitEUR);
+        totalDebitEUR = totalDebitEUR.subtract(retrievedFaultyAmounts.debitEUR);
+        BigDecimal totalCreditEUR = recordAmountTally.creditEUR.add(sansDupRecTally.creditEUR);
+        totalCreditEUR = totalCreditEUR.subtract(retrievedFaultyAmounts.creditEUR);
+
+        BigDecimal recordAmountFL = totalDebitFL.subtract(totalCreditFL).abs();
+        BigDecimal recordAmountUSD = totalDebitUSD.subtract(totalCreditUSD).abs();
+        BigDecimal recordAmountEUR = totalDebitEUR.subtract(totalCreditEUR).abs();
+
+        retrievedAmounts.put(Constants.CURRENCY_EURO, recordAmountEUR);
+        retrievedAmounts.put(Constants.CURRENCY_USD, recordAmountUSD);
+        retrievedAmounts.put(Constants.CURRENCY_FL, recordAmountFL);
+
+        return retrievedAmounts;
     }
 
     private TallyBuilder calculateAmountsFaultyAccountNumber(
@@ -95,82 +181,6 @@ public class ConfirmationLetterTally {
         }
 
         return faultyAccountTally;
-    }
-
-    private Map<String, BigDecimal> calculateRetrieveAmounts(
-            List<Record> records,
-            Client client,
-            List<TempRecord> faultyAccountNumberRecordList,
-            List<TempRecord> sansDuplicateFaultRecordsList) {
-
-        Map<String, BigDecimal> retrievedAmounts = new HashMap<String, BigDecimal>();
-
-        if (client.getCounterTransfer().equalsIgnoreCase(Constants.TRUE)) {
-            TallyBuilder recordAmountTally = new TallyBuilder();
-            for (Record record : records) {
-                if (record.getFeeRecord() != 1) {
-                    recordAmountTally.addRecord(record);
-                }
-            }
-            retrievedAmounts.put(Constants.CURRENCY_EURO, recordAmountTally.debitEUR);
-            retrievedAmounts.put(Constants.CURRENCY_USD, recordAmountTally.debitUSD);
-            retrievedAmounts.put(Constants.CURRENCY_FL, recordAmountTally.debitFL);
-        }
-        // Not Balanced
-        else {
-            TallyBuilder recordAmountTally = new TallyBuilder();
-
-            for (Record record : records) {
-                if (record.getIsCounterTransferRecord().compareTo(0) == 0
-                        && record.getFeeRecord().compareTo(0) == 0) {
-                    recordAmountTally.addRecord(record);
-                }
-            }
-
-            // Sansduplicate
-            TallyBuilder sansDupRecTally = new TallyBuilder();
-            for (TempRecord sansDupRec : sansDuplicateFaultRecordsList) {
-                Integer currencyCode = sansDupRec.getCurrencyCode();
-                if (sansDupRec.getSign() == null) {
-                    String sign = client.getCreditDebit();
-                    sansDupRec.setSign(sign);
-                }
-                if (currencyCode == null) {
-                    String currencyId = currencyDao.retrieveCurrencyDefault(client.getProfile());
-                    Currency currency = currencyDao.retrieveCurrencyOnId(Integer.valueOf(currencyId));
-                    sansDupRec.setCurrencyCode(currency.getCode());
-                } else {
-                    sansDupRecTally.addTempRecord(sansDupRec);
-                }
-            }
-
-            TallyBuilder retrievedFaultyAmounts = calculateAmountsFaultyAccountNumber(
-                    faultyAccountNumberRecordList, client);
-            BigDecimal totalDebitFL = recordAmountTally.debitFL.add(sansDupRecTally.debitFL);
-            totalDebitFL = totalDebitFL.subtract(retrievedFaultyAmounts.debitFL);
-            BigDecimal totalCreditFL = recordAmountTally.creditFL.add(sansDupRecTally.creditFL);
-            totalCreditFL = totalCreditFL.subtract(retrievedFaultyAmounts.creditFL);
-
-            BigDecimal totalDebitUSD = recordAmountTally.debitUSD.add(sansDupRecTally.debitUSD);
-            totalDebitUSD = totalDebitUSD.subtract(retrievedFaultyAmounts.debitUSD);
-            BigDecimal totalCreditUSD = recordAmountTally.creditUSD.add(sansDupRecTally.creditUSD);
-            totalCreditUSD = totalCreditUSD.subtract(retrievedFaultyAmounts.creditUSD);
-
-            BigDecimal totalDebitEUR = recordAmountTally.debitEUR.add(sansDupRecTally.debitEUR);
-            totalDebitEUR = totalDebitEUR.subtract(retrievedFaultyAmounts.debitEUR);
-            BigDecimal totalCreditEUR = recordAmountTally.creditEUR.add(sansDupRecTally.creditEUR);
-            totalCreditEUR = totalCreditEUR.subtract(retrievedFaultyAmounts.creditEUR);
-
-            BigDecimal recordAmountFL = totalDebitFL.subtract(totalCreditFL).abs();
-            BigDecimal recordAmountUSD = totalDebitUSD.subtract(totalCreditUSD).abs();
-            BigDecimal recordAmountEUR = totalDebitEUR.subtract(totalCreditEUR).abs();
-
-            retrievedAmounts.put(Constants.CURRENCY_EURO, recordAmountEUR);
-            retrievedAmounts.put(Constants.CURRENCY_USD, recordAmountUSD);
-            retrievedAmounts.put(Constants.CURRENCY_FL, recordAmountFL);
-        }
-
-        return retrievedAmounts;
     }
 
     interface BatchValueAccessor {
