@@ -34,21 +34,54 @@ public class ConfirmationLetterTally {
         return result;
     }
 
-    // Calculate sum amount from faultyAccountnumber list
+    private class TallyBuilder {
+        BigDecimal creditFL = BigDecimal.ZERO;
+        BigDecimal creditUSD = BigDecimal.ZERO;
+        BigDecimal creditEUR = BigDecimal.ZERO;
+        BigDecimal debitFL = BigDecimal.ZERO;
+        BigDecimal debitUSD = BigDecimal.ZERO;
+        BigDecimal debitEUR = BigDecimal.ZERO;
+
+        void addRecord(Record record) {
+            add(record.getCurrency().getCode(), record.getAmount(), record.isDebit());
+        }
+
+        void addTempRecord(TempRecord record) {
+            add(record.getCurrencyCode(), new BigDecimal(record.getAmount()), record.isDebit());
+        }
+
+        void add(Integer currencyCode, BigDecimal amount, boolean isDebit) {
+            if (currencyCode.equals(Constants.FL_CURRENCY_CODE)
+                    || currencyCode.equals(Constants.FL_CURRENCY_CODE_FOR_WEIRD_BANK)) {
+                if (isDebit) {
+                    debitFL = amount.add(debitFL);
+                } else {
+                    creditFL = amount.add(creditFL);
+                }
+            }
+            else if (currencyCode.equals(Constants.USD_CURRENCY_CODE)) {
+                if (isDebit) {
+                    debitUSD = amount.add(debitUSD);
+                } else {
+                    creditUSD = amount.add(creditUSD);
+                }
+            }
+            else if (currencyCode.equals(Constants.EUR_CURRENCY_CODE)) {
+                if (isDebit) {
+                    debitEUR = amount.add(debitEUR);
+                } else {
+                    creditEUR = amount.add(creditEUR);
+                }
+            }
+        }
+    }
+
     private Map<String, BigDecimal> calculateAmountsFaultyAccountNumber(
             List<TempRecord> faultyAccountNumberRecordList, Client client) {
         Map<String, BigDecimal> retrievedAmountsFaultyAccountNumber = new HashMap<String, BigDecimal>();
 
-        BigDecimal faultyAccRecordAmountCreditFL = new BigDecimal(0);
-        BigDecimal faultyAccRecordAmountCreditUSD = new BigDecimal(0);
-        BigDecimal faultyAccRecordAmountCreditEUR = new BigDecimal(0);
-
-        BigDecimal faultyAccRecordAmountDebitFL = new BigDecimal(0);
-        BigDecimal faultyAccRecordAmountDebitUSD = new BigDecimal(0);
-        BigDecimal faultyAccRecordAmountDebitEUR = new BigDecimal(0);
-
+        TallyBuilder faultyAccountTally = new TallyBuilder();
         for (TempRecord faultyAccountNumberRecord : faultyAccountNumberRecordList) {
-            // FL
             if (StringUtils.isBlank(faultyAccountNumberRecord.getSign())) {
                 faultyAccountNumberRecord.setSign(client.getCreditDebit());
             }
@@ -59,45 +92,16 @@ public class ConfirmationLetterTally {
                 faultyAccountNumberRecord.setCurrencyCode(currency.getCode());
             }
 
-            if (faultyAccountNumberRecord.getCurrencyCode().equals(Constants.FL_CURRENCY_CODE)
-                    || faultyAccountNumberRecord.getCurrencyCode().equals(Constants.FL_CURRENCY_CODE_FOR_WEIRD_BANK)) {
-
-                if (faultyAccountNumberRecord.isDebit()) {
-                    faultyAccRecordAmountDebitFL = new BigDecimal(faultyAccountNumberRecord.getAmount())
-                            .add(faultyAccRecordAmountDebitFL);
-                } else {
-                    faultyAccRecordAmountCreditFL = new BigDecimal(faultyAccountNumberRecord.getAmount())
-                            .add(faultyAccRecordAmountCreditFL);
-                }
-            }
-            if (faultyAccountNumberRecord.getCurrencyCode().equals(Constants.USD_CURRENCY_CODE)) {
-                if (faultyAccountNumberRecord.isDebit()) {
-                    faultyAccRecordAmountDebitUSD = new BigDecimal(faultyAccountNumberRecord.getAmount())
-                            .add(faultyAccRecordAmountDebitUSD);
-                } else {
-                    faultyAccRecordAmountCreditUSD = new BigDecimal(faultyAccountNumberRecord.getAmount())
-                            .add(faultyAccRecordAmountCreditUSD);
-                }
-            }
-            if (faultyAccountNumberRecord.getCurrencyCode().equals(Constants.EUR_CURRENCY_CODE)) {
-                if (faultyAccountNumberRecord.isDebit()) {
-                    faultyAccRecordAmountDebitEUR = new BigDecimal(faultyAccountNumberRecord.getAmount())
-                            .add(faultyAccRecordAmountDebitEUR);
-                } else {
-                    faultyAccRecordAmountCreditEUR = new BigDecimal(faultyAccountNumberRecord.getAmount())
-                            .add(faultyAccRecordAmountCreditEUR);
-                }
-            }
-
-            retrievedAmountsFaultyAccountNumber.put("FaultyAccDebitFL", faultyAccRecordAmountDebitFL);
-            retrievedAmountsFaultyAccountNumber.put("FaultyAccDebitUSD", faultyAccRecordAmountDebitUSD);
-            retrievedAmountsFaultyAccountNumber.put("FaultyAccDebitEUR", faultyAccRecordAmountDebitEUR);
-
-            retrievedAmountsFaultyAccountNumber.put("FaultyAccCreditFL", faultyAccRecordAmountCreditFL);
-            retrievedAmountsFaultyAccountNumber.put("FaultyAccCreditUSD", faultyAccRecordAmountCreditUSD);
-            retrievedAmountsFaultyAccountNumber.put("FaultyAccCreditEUR", faultyAccRecordAmountCreditEUR);
-
+            faultyAccountTally.addTempRecord(faultyAccountNumberRecord);
         }
+
+        retrievedAmountsFaultyAccountNumber.put("FaultyAccDebitFL", faultyAccountTally.debitFL);
+        retrievedAmountsFaultyAccountNumber.put("FaultyAccDebitUSD", faultyAccountTally.debitUSD);
+        retrievedAmountsFaultyAccountNumber.put("FaultyAccDebitEUR", faultyAccountTally.debitEUR);
+        retrievedAmountsFaultyAccountNumber.put("FaultyAccCreditFL", faultyAccountTally.creditFL);
+        retrievedAmountsFaultyAccountNumber.put("FaultyAccCreditUSD", faultyAccountTally.creditUSD);
+        retrievedAmountsFaultyAccountNumber.put("FaultyAccCreditEUR", faultyAccountTally.creditEUR);
+
         return retrievedAmountsFaultyAccountNumber;
     }
 
@@ -109,90 +113,30 @@ public class ConfirmationLetterTally {
 
         Map<String, BigDecimal> retrievedAmounts = new HashMap<String, BigDecimal>();
 
-        BigDecimal recordAmountFL = new BigDecimal(0);
-        BigDecimal recordAmountUSD = new BigDecimal(0);
-        BigDecimal recordAmountEUR = new BigDecimal(0);
-
-        BigDecimal recordAmountDebitFL = new BigDecimal(0);
-        BigDecimal recordAmountDebitEUR = new BigDecimal(0);
-        BigDecimal recordAmountDebitUSD = new BigDecimal(0);
-
-        BigDecimal recordAmountCreditFL = new BigDecimal(0);
-        BigDecimal recordAmountCreditEUR = new BigDecimal(0);
-        BigDecimal recordAmountCreditUSD = new BigDecimal(0);
-
-        BigDecimal amountSansDebitFL = new BigDecimal(0);
-        BigDecimal amountSansDebitUSD = new BigDecimal(0);
-        BigDecimal amountSansDebitEUR = new BigDecimal(0);
-
-        BigDecimal amountSansCreditFL = new BigDecimal(0);
-        BigDecimal amountSansCreditUSD = new BigDecimal(0);
-        BigDecimal amountSansCreditEUR = new BigDecimal(0);
-
-        BigDecimal totalDebitFL;
-        BigDecimal totalDebitUSD;
-        BigDecimal totalDebitEUR;
-
-        BigDecimal totalCreditFL;
-        BigDecimal totalCreditUSD;
-        BigDecimal totalCreditEUR;
-
         if (client.getCounterTransfer().equalsIgnoreCase(Constants.TRUE)) {
+            TallyBuilder recordAmountTally = new TallyBuilder();
             for (Record record : records) {
                 if (record.getFeeRecord() != 1) {
-                    if ((record.getCurrency().getCode().equals(Constants.FL_CURRENCY_CODE)
-                            || record.getCurrency().getCode().equals(Constants.FL_CURRENCY_CODE_FOR_WEIRD_BANK))
-                            && record.isDebit()) {
-                        recordAmountFL = record.getAmount().add(recordAmountFL);
-                    }
-                    if (record.getCurrency().getCode().equals(Constants.EUR_CURRENCY_CODE)
-                            && record.isDebit()) {
-                        recordAmountEUR = record.getAmount().add(recordAmountEUR);
-                    }
-                    if (record.getCurrency().getCode().equals(Constants.USD_CURRENCY_CODE)
-                            && record.isDebit()) {
-                        recordAmountUSD = record.getAmount().add(recordAmountUSD);
-                    }
+                    recordAmountTally.addRecord(record);
                 }
             }
-            retrievedAmounts.put(Constants.CURRENCY_EURO, recordAmountEUR);
-            retrievedAmounts.put(Constants.CURRENCY_USD, recordAmountUSD);
-            retrievedAmounts.put(Constants.CURRENCY_FL, recordAmountFL);
+            retrievedAmounts.put(Constants.CURRENCY_EURO, recordAmountTally.debitEUR);
+            retrievedAmounts.put(Constants.CURRENCY_USD, recordAmountTally.debitUSD);
+            retrievedAmounts.put(Constants.CURRENCY_FL, recordAmountTally.debitFL);
         }
         // Not Balanced
         else {
+            TallyBuilder recordAmountTally = new TallyBuilder();
 
             for (Record record : records) {
                 if (record.getIsCounterTransferRecord().compareTo(0) == 0
                         && record.getFeeRecord().compareTo(0) == 0) {
-                    if ((record.getCurrency().getCode().equals(Constants.FL_CURRENCY_CODE)
-                            || record.getCurrency().getCode().equals(Constants.FL_CURRENCY_CODE_FOR_WEIRD_BANK))) {
-                        if (record.isDebit()) {
-                            recordAmountDebitFL = record.getAmount().add(recordAmountDebitFL);
-                        } else {
-                            recordAmountCreditFL = record.getAmount().add(recordAmountCreditFL);
-                        }
-
-                        if (record.getCurrency().getCode().equals(Constants.EUR_CURRENCY_CODE)) {
-                            if (record.isDebit()) {
-                                recordAmountDebitEUR = record.getAmount().add(recordAmountDebitEUR);
-                            } else {
-                                recordAmountCreditEUR = record.getAmount().add(recordAmountCreditEUR);
-                            }
-                        }
-                    }
-                }
-
-                if (record.getCurrency().getCode().equals(Constants.USD_CURRENCY_CODE)) {
-                    if (record.isDebit()) {
-                        recordAmountDebitUSD = record.getAmount().add(recordAmountDebitUSD);
-                    } else {
-                        recordAmountCreditUSD = record.getAmount().add(recordAmountCreditUSD);
-                    }
+                    recordAmountTally.addRecord(record);
                 }
             }
 
             // Sansduplicate
+            TallyBuilder sansDupRecTally = new TallyBuilder();
             for (TempRecord sansDupRec : sansDuplicateFaultRecordsList) {
                 Integer currencyCode = sansDupRec.getCurrencyCode();
                 if (sansDupRec.getSign() == null) {
@@ -204,71 +148,46 @@ public class ConfirmationLetterTally {
                     Currency currency = currencyDao.retrieveCurrencyOnId(Integer.valueOf(currencyId));
                     sansDupRec.setCurrencyCode(currency.getCode());
                 } else {
-
-                    if (currencyCode.equals(Constants.FL_CURRENCY_CODE)
-                            || currencyCode.equals(Constants.FL_CURRENCY_CODE_FOR_WEIRD_BANK)) {
-
-                        if (sansDupRec.isDebit()) {
-                            amountSansDebitFL = new BigDecimal(sansDupRec.getAmount()).add(amountSansDebitFL);
-                        } else {
-                            amountSansCreditFL = new BigDecimal(sansDupRec.getAmount()).add(amountSansCreditFL);
-                        }
-                    }
-                    if (currencyCode.equals(Constants.USD_CURRENCY_CODE)) {
-                        if (sansDupRec.isDebit()) {
-                            amountSansDebitUSD = new BigDecimal(sansDupRec.getAmount()).add(amountSansDebitUSD);
-                        } else {
-                            amountSansCreditUSD = new BigDecimal(sansDupRec.getAmount()).add(amountSansCreditUSD);
-                        }
-                    }
-                    if (currencyCode.equals(Constants.EUR_CURRENCY_CODE)) {
-                        if (sansDupRec.isDebit()) {
-                            amountSansDebitEUR = new BigDecimal(sansDupRec.getAmount()).add(amountSansDebitEUR);
-                        } else {
-                            amountSansCreditEUR = new BigDecimal(sansDupRec.getAmount()).add(amountSansCreditEUR);
-                        }
-                    }
+                    sansDupRecTally.addTempRecord(sansDupRec);
                 }
-
             }
 
             Map<String, BigDecimal> retrievedAccountNumberAmounts = calculateAmountsFaultyAccountNumber(
                     faultyAccountNumberRecordList, client);
-            totalDebitFL = recordAmountDebitFL.add(amountSansDebitFL);
+            BigDecimal totalDebitFL = recordAmountTally.debitFL.add(sansDupRecTally.debitFL);
             if (retrievedAccountNumberAmounts.get("FaultyAccDebitFL") != null) {
                 totalDebitFL = totalDebitFL.subtract(retrievedAccountNumberAmounts.get("FaultyAccDebitFL"));
             }
-            totalCreditFL = recordAmountCreditFL.add(amountSansCreditFL);
+            BigDecimal totalCreditFL = recordAmountTally.creditFL.add(sansDupRecTally.creditFL);
             if (retrievedAccountNumberAmounts.get("FaultyAccCreditFL") != null) {
                 totalCreditFL = totalCreditFL.subtract(retrievedAccountNumberAmounts.get("FaultyAccCreditFL"));
             }
 
-            totalDebitUSD = recordAmountDebitUSD.add(amountSansDebitUSD);
+            BigDecimal totalDebitUSD = recordAmountTally.debitUSD.add(sansDupRecTally.debitUSD);
             if (retrievedAccountNumberAmounts.get("FaultyAccDebitUSD") != null) {
                 totalDebitUSD = totalDebitUSD.subtract(retrievedAccountNumberAmounts.get("FaultyAccDebitUSD"));
             }
-            totalCreditUSD = recordAmountCreditUSD.add(amountSansCreditUSD);
+            BigDecimal totalCreditUSD = recordAmountTally.creditUSD.add(sansDupRecTally.creditUSD);
             if (retrievedAccountNumberAmounts.get("FaultyAccCreditUSD") != null) {
                 totalCreditUSD = totalCreditUSD.subtract(retrievedAccountNumberAmounts.get("FaultyAccCreditUSD"));
             }
 
-            totalDebitEUR = recordAmountDebitEUR.add(amountSansDebitEUR);
+            BigDecimal totalDebitEUR = recordAmountTally.debitEUR.add(sansDupRecTally.debitEUR);
             if (retrievedAccountNumberAmounts.get("FaultyAccDebitEUR") != null) {
                 totalDebitEUR = totalDebitEUR.subtract(retrievedAccountNumberAmounts.get("FaultyAccDebitEUR"));
             }
-            totalCreditEUR = recordAmountCreditEUR.add(amountSansCreditEUR);
+            BigDecimal totalCreditEUR = recordAmountTally.creditEUR.add(sansDupRecTally.creditEUR);
             if (retrievedAccountNumberAmounts.get("FaultyAccCreditEUR") != null) {
                 totalCreditEUR = totalCreditEUR.subtract(retrievedAccountNumberAmounts.get("FaultyAccCreditEUR"));
             }
 
-            recordAmountFL = totalDebitFL.subtract(totalCreditFL).abs();
-            recordAmountUSD = totalDebitUSD.subtract(totalCreditUSD).abs();
-            recordAmountEUR = totalDebitEUR.subtract(totalCreditEUR).abs();
+            BigDecimal recordAmountFL = totalDebitFL.subtract(totalCreditFL).abs();
+            BigDecimal recordAmountUSD = totalDebitUSD.subtract(totalCreditUSD).abs();
+            BigDecimal recordAmountEUR = totalDebitEUR.subtract(totalCreditEUR).abs();
 
             retrievedAmounts.put(Constants.CURRENCY_EURO, recordAmountEUR);
             retrievedAmounts.put(Constants.CURRENCY_USD, recordAmountUSD);
             retrievedAmounts.put(Constants.CURRENCY_FL, recordAmountFL);
-
         }
 
         return retrievedAmounts;
