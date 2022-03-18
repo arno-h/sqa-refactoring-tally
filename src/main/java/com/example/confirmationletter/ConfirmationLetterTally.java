@@ -24,13 +24,9 @@ public class ConfirmationLetterTally {
         Map<String, BigDecimal> result = calculateRetrieveAmounts(
                 records, client, faultyAccountNumberRecordList, sansDuplicateFaultRecordsList);
         result.put("CreditBatchTotal", batchTotalSum(
-                batchTotals.values(),
-                client.getAmountDivider(),
-                BatchTotal::getCreditValue));
+                batchTotals.values(), client.getAmountDivider(), BatchTotal::getCreditValue));
         result.put("DebitBatchTotal", batchTotalSum(
-                batchTotals.values(),
-                client.getAmountDivider(),
-                BatchTotal::getCreditCounterValueForDebit));
+                batchTotals.values(), client.getAmountDivider(), BatchTotal::getCreditCounterValueForDebit));
         return result;
     }
 
@@ -101,7 +97,9 @@ public class ConfirmationLetterTally {
         if (client.getCounterTransfer().equalsIgnoreCase(Constants.TRUE)) {
             return counterTransferAmounts(records);
         } else {
-            return unbalancedAmounts(records, client, faultyAccountNumberRecordList, sansDuplicateFaultRecordsList);
+            fixCurrencyAndSign(faultyAccountNumberRecordList, client);
+            fixCurrencyAndSign(sansDuplicateFaultRecordsList, client);
+            return unbalancedAmounts(records, faultyAccountNumberRecordList, sansDuplicateFaultRecordsList);
         }
     }
 
@@ -121,7 +119,7 @@ public class ConfirmationLetterTally {
         return retrievedAmounts;
     }
 
-    private Map<String, BigDecimal> unbalancedAmounts(List<Record> records, Client client,
+    private Map<String, BigDecimal> unbalancedAmounts(List<Record> records,
                                                       List<TempRecord> faultyAccountNumberRecordList,
                                                       List<TempRecord> sansDuplicateFaultRecordsList) {
 
@@ -129,31 +127,23 @@ public class ConfirmationLetterTally {
         TallyBuilder recordAmountTally = new TallyBuilder();
 
         for (Record record : records) {
-            if (record.getIsCounterTransferRecord().compareTo(0) == 0
-                    && record.getFeeRecord().compareTo(0) == 0) {
+            if (record.getIsCounterTransferRecord().compareTo(0) == 0 && record.getFeeRecord().compareTo(0) == 0) {
                 recordAmountTally.addRecord(record);
             }
         }
 
-        // Sansduplicate
         TallyBuilder sansDupRecTally = new TallyBuilder();
         for (TempRecord sansDupRec : sansDuplicateFaultRecordsList) {
-            Integer currencyCode = sansDupRec.getCurrencyCode();
-            if (sansDupRec.getSign() == null) {
-                String sign = client.getCreditDebit();
-                sansDupRec.setSign(sign);
-            }
-            if (currencyCode == null) {
-                String currencyId = currencyDao.retrieveCurrencyDefault(client.getProfile());
-                Currency currency = currencyDao.retrieveCurrencyOnId(Integer.valueOf(currencyId));
-                sansDupRec.setCurrencyCode(currency.getCode());
-            }
             sansDupRecTally.addTempRecord(sansDupRec);
         }
 
+        TallyBuilder faultyAccountTally = new TallyBuilder();
+        for (TempRecord faultyAccountNumberRecord : faultyAccountNumberRecordList) {
+            faultyAccountTally.addTempRecord(faultyAccountNumberRecord);
+        }
+
         recordAmountTally.addTally(sansDupRecTally);
-        TallyBuilder retrievedFaultyAmounts = amountsFaultyAccountNumber(faultyAccountNumberRecordList, client);
-        recordAmountTally.subtractTally(retrievedFaultyAmounts);
+        recordAmountTally.subtractTally(faultyAccountTally);
 
         BigDecimal recordAmountFL = recordAmountTally.debitFL.subtract(recordAmountTally.creditFL).abs();
         BigDecimal recordAmountUSD = recordAmountTally.debitUSD.subtract(recordAmountTally.creditUSD).abs();
@@ -166,26 +156,19 @@ public class ConfirmationLetterTally {
         return retrievedAmounts;
     }
 
-    private TallyBuilder amountsFaultyAccountNumber(
-            List<TempRecord> faultyAccountNumberRecordList, Client client) {
-
-        TallyBuilder faultyAccountTally = new TallyBuilder();
-        for (TempRecord faultyAccountNumberRecord : faultyAccountNumberRecordList) {
-            if (StringUtils.isBlank(faultyAccountNumberRecord.getSign())) {
-                faultyAccountNumberRecord.setSign(client.getCreditDebit());
+    private void fixCurrencyAndSign(List<TempRecord> tempRecordList, Client client) {
+        for (TempRecord tempRecord : tempRecordList) {
+            if (tempRecord.getSign() == null || StringUtils.isBlank(tempRecord.getSign())) {
+                tempRecord.setSign(client.getCreditDebit());
             }
-
-            if (faultyAccountNumberRecord.getCurrencyCode() == null) {
+            if (tempRecord.getCurrencyCode() == null) {
                 String currencyId = currencyDao.retrieveCurrencyDefault(client.getProfile());
                 Currency currency = currencyDao.retrieveCurrencyOnId(Integer.valueOf(currencyId));
-                faultyAccountNumberRecord.setCurrencyCode(currency.getCode());
+                tempRecord.setCurrencyCode(currency.getCode());
             }
-
-            faultyAccountTally.addTempRecord(faultyAccountNumberRecord);
         }
-
-        return faultyAccountTally;
     }
+
 
     interface BatchValueAccessor {
         BigDecimal get(BatchTotal batchTotal);
