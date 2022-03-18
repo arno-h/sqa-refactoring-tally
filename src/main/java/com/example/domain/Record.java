@@ -20,12 +20,12 @@ public class Record extends TempRecord {
         this.bank = bank;
     }
 
-    public Integer getFeeRecord() {
-        return feeRecord;
+    public boolean isFeeRecord() {
+        return feeRecord == 1;
     }
 
-    public Integer getIsCounterTransferRecord() {
-        return isCounterTransferRecord;
+    public boolean isCounterTransferRecord() {
+        return isCounterTransferRecord == 1;
     }
 
     public String getBeneficiaryAccountNumber() {

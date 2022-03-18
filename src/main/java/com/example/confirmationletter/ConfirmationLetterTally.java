@@ -35,7 +35,7 @@ public class ConfirmationLetterTally {
             List<TempRecord> faultyAccountNumberRecordList,
             List<TempRecord> sansDuplicateFaultRecordsList) {
 
-        if (client.getCounterTransfer().equalsIgnoreCase(Constants.TRUE)) {
+        if (client.isCounterTransfer()) {
             return counterTransferAmounts(records);
         } else {
             fixCurrencyAndSign(faultyAccountNumberRecordList, client);
@@ -47,7 +47,7 @@ public class ConfirmationLetterTally {
     private Map<String, BigDecimal> counterTransferAmounts(List<Record> records) {
         TallyBuilder recordAmountTally = new TallyBuilder();
         for (Record record : records) {
-            if (record.getFeeRecord() != 1) {
+            if (record.isFeeRecord()) {
                 recordAmountTally.add(record);
             }
         }
@@ -68,7 +68,7 @@ public class ConfirmationLetterTally {
         TallyBuilder recordAmountTally = new TallyBuilder();
 
         for (Record record : records) {
-            if (record.getIsCounterTransferRecord().compareTo(0) == 0 && record.getFeeRecord().compareTo(0) == 0) {
+            if (!record.isCounterTransferRecord() && !record.isFeeRecord()) {
                 recordAmountTally.add(record);
             }
         }
@@ -109,7 +109,6 @@ public class ConfirmationLetterTally {
             }
         }
     }
-
 
     interface BatchValueAccessor {
         BigDecimal get(BatchTotal batchTotal);

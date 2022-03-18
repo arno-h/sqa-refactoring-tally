@@ -1,5 +1,7 @@
 package com.example.domain;
 
+import com.example.service.impl.Constants;
+
 import java.math.BigDecimal;
 import java.util.Map;
 
@@ -25,8 +27,8 @@ public class Client {
         return creditDebit;
     }
 
-    public String getCounterTransfer() {
-        return counterTransfer;
+    public boolean isCounterTransfer() {
+        return counterTransfer.equalsIgnoreCase(Constants.TRUE);
     }
 
     public BigDecimal getAmountDivider() {
