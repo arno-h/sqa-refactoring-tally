@@ -34,7 +34,7 @@ public class ConfirmationLetterTally {
         return result;
     }
 
-    private class TallyBuilder {
+    private static class TallyBuilder {
         BigDecimal creditFL = BigDecimal.ZERO;
         BigDecimal creditUSD = BigDecimal.ZERO;
         BigDecimal creditEUR = BigDecimal.ZERO;
@@ -76,9 +76,8 @@ public class ConfirmationLetterTally {
         }
     }
 
-    private Map<String, BigDecimal> calculateAmountsFaultyAccountNumber(
+    private TallyBuilder calculateAmountsFaultyAccountNumber(
             List<TempRecord> faultyAccountNumberRecordList, Client client) {
-        Map<String, BigDecimal> retrievedAmountsFaultyAccountNumber = new HashMap<String, BigDecimal>();
 
         TallyBuilder faultyAccountTally = new TallyBuilder();
         for (TempRecord faultyAccountNumberRecord : faultyAccountNumberRecordList) {
@@ -95,14 +94,7 @@ public class ConfirmationLetterTally {
             faultyAccountTally.addTempRecord(faultyAccountNumberRecord);
         }
 
-        retrievedAmountsFaultyAccountNumber.put("FaultyAccDebitFL", faultyAccountTally.debitFL);
-        retrievedAmountsFaultyAccountNumber.put("FaultyAccDebitUSD", faultyAccountTally.debitUSD);
-        retrievedAmountsFaultyAccountNumber.put("FaultyAccDebitEUR", faultyAccountTally.debitEUR);
-        retrievedAmountsFaultyAccountNumber.put("FaultyAccCreditFL", faultyAccountTally.creditFL);
-        retrievedAmountsFaultyAccountNumber.put("FaultyAccCreditUSD", faultyAccountTally.creditUSD);
-        retrievedAmountsFaultyAccountNumber.put("FaultyAccCreditEUR", faultyAccountTally.creditEUR);
-
-        return retrievedAmountsFaultyAccountNumber;
+        return faultyAccountTally;
     }
 
     private Map<String, BigDecimal> calculateRetrieveAmounts(
@@ -152,34 +144,22 @@ public class ConfirmationLetterTally {
                 }
             }
 
-            Map<String, BigDecimal> retrievedAccountNumberAmounts = calculateAmountsFaultyAccountNumber(
+            TallyBuilder retrievedFaultyAmounts = calculateAmountsFaultyAccountNumber(
                     faultyAccountNumberRecordList, client);
             BigDecimal totalDebitFL = recordAmountTally.debitFL.add(sansDupRecTally.debitFL);
-            if (retrievedAccountNumberAmounts.get("FaultyAccDebitFL") != null) {
-                totalDebitFL = totalDebitFL.subtract(retrievedAccountNumberAmounts.get("FaultyAccDebitFL"));
-            }
+            totalDebitFL = totalDebitFL.subtract(retrievedFaultyAmounts.debitFL);
             BigDecimal totalCreditFL = recordAmountTally.creditFL.add(sansDupRecTally.creditFL);
-            if (retrievedAccountNumberAmounts.get("FaultyAccCreditFL") != null) {
-                totalCreditFL = totalCreditFL.subtract(retrievedAccountNumberAmounts.get("FaultyAccCreditFL"));
-            }
+            totalCreditFL = totalCreditFL.subtract(retrievedFaultyAmounts.creditFL);
 
             BigDecimal totalDebitUSD = recordAmountTally.debitUSD.add(sansDupRecTally.debitUSD);
-            if (retrievedAccountNumberAmounts.get("FaultyAccDebitUSD") != null) {
-                totalDebitUSD = totalDebitUSD.subtract(retrievedAccountNumberAmounts.get("FaultyAccDebitUSD"));
-            }
+            totalDebitUSD = totalDebitUSD.subtract(retrievedFaultyAmounts.debitUSD);
             BigDecimal totalCreditUSD = recordAmountTally.creditUSD.add(sansDupRecTally.creditUSD);
-            if (retrievedAccountNumberAmounts.get("FaultyAccCreditUSD") != null) {
-                totalCreditUSD = totalCreditUSD.subtract(retrievedAccountNumberAmounts.get("FaultyAccCreditUSD"));
-            }
+            totalCreditUSD = totalCreditUSD.subtract(retrievedFaultyAmounts.creditUSD);
 
             BigDecimal totalDebitEUR = recordAmountTally.debitEUR.add(sansDupRecTally.debitEUR);
-            if (retrievedAccountNumberAmounts.get("FaultyAccDebitEUR") != null) {
-                totalDebitEUR = totalDebitEUR.subtract(retrievedAccountNumberAmounts.get("FaultyAccDebitEUR"));
-            }
+            totalDebitEUR = totalDebitEUR.subtract(retrievedFaultyAmounts.debitEUR);
             BigDecimal totalCreditEUR = recordAmountTally.creditEUR.add(sansDupRecTally.creditEUR);
-            if (retrievedAccountNumberAmounts.get("FaultyAccCreditEUR") != null) {
-                totalCreditEUR = totalCreditEUR.subtract(retrievedAccountNumberAmounts.get("FaultyAccCreditEUR"));
-            }
+            totalCreditEUR = totalCreditEUR.subtract(retrievedFaultyAmounts.creditEUR);
 
             BigDecimal recordAmountFL = totalDebitFL.subtract(totalCreditFL).abs();
             BigDecimal recordAmountUSD = totalDebitUSD.subtract(totalCreditUSD).abs();
