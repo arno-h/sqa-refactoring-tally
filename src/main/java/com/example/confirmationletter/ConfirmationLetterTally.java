@@ -147,9 +147,8 @@ public class ConfirmationLetterTally {
                 String currencyId = currencyDao.retrieveCurrencyDefault(client.getProfile());
                 Currency currency = currencyDao.retrieveCurrencyOnId(Integer.valueOf(currencyId));
                 sansDupRec.setCurrencyCode(currency.getCode());
-            } else {
-                sansDupRecTally.addTempRecord(sansDupRec);
             }
+            sansDupRecTally.addTempRecord(sansDupRec);
         }
 
         recordAmountTally.addTally(sansDupRecTally);
