@@ -1,6 +1,7 @@
 package com.example.record.domain;
 
 import com.example.domain.Currency;
+import com.example.record.service.impl.Constants;
 
 public class TempRecord {
     String sign;
@@ -15,6 +16,10 @@ public class TempRecord {
 
     public String getSign() {
         return sign;
+    }
+
+    public boolean isDebit() {
+        return sign.equalsIgnoreCase(Constants.DEBIT);
     }
 
     public void setSign(String sign) {

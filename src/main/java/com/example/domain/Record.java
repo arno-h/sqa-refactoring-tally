@@ -1,5 +1,7 @@
 package com.example.domain;
 
+import com.example.record.service.impl.Constants;
+
 import java.math.BigDecimal;
 
 public class Record {
@@ -33,6 +35,10 @@ public class Record {
 
     public String getSign() {
         return sign;
+    }
+
+    public boolean isDebit() {
+        return sign.equalsIgnoreCase(Constants.DEBIT);
     }
 
     public Currency getCurrency() {

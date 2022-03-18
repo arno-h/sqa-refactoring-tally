@@ -64,7 +64,7 @@ public class ConfirmationLetterTally {
             if (faultyAccountNumberRecord.getCurrencyCode().equals(Constants.FL_CURRENCY_CODE)
                     || faultyAccountNumberRecord.getCurrencyCode().equals(Constants.FL_CURRENCY_CODE_FOR_WEIRD_BANK)) {
 
-                if (faultyAccountNumberRecord.getSign().equalsIgnoreCase(Constants.DEBIT)) {
+                if (faultyAccountNumberRecord.isDebit()) {
                     faultyAccRecordAmountDebitFL = new BigDecimal(faultyAccountNumberRecord.getAmount())
                             .add(faultyAccRecordAmountDebitFL);
                 } else {
@@ -73,7 +73,7 @@ public class ConfirmationLetterTally {
                 }
             }
             if (faultyAccountNumberRecord.getCurrencyCode().equals(Constants.USD_CURRENCY_CODE)) {
-                if (faultyAccountNumberRecord.getSign().equalsIgnoreCase(Constants.DEBIT)) {
+                if (faultyAccountNumberRecord.isDebit()) {
                     faultyAccRecordAmountDebitUSD = new BigDecimal(faultyAccountNumberRecord.getAmount())
                             .add(faultyAccRecordAmountDebitUSD);
                 } else {
@@ -82,7 +82,7 @@ public class ConfirmationLetterTally {
                 }
             }
             if (faultyAccountNumberRecord.getCurrencyCode().equals(Constants.EUR_CURRENCY_CODE)) {
-                if (faultyAccountNumberRecord.getSign().equalsIgnoreCase(Constants.DEBIT)) {
+                if (faultyAccountNumberRecord.isDebit()) {
                     faultyAccRecordAmountDebitEUR = new BigDecimal(faultyAccountNumberRecord.getAmount())
                             .add(faultyAccRecordAmountDebitEUR);
                 } else {
@@ -145,15 +145,15 @@ public class ConfirmationLetterTally {
                 if (record.getFeeRecord() != 1) {
                     if ((record.getCurrency().getCode().equals(Constants.FL_CURRENCY_CODE)
                             || record.getCurrency().getCode().equals(Constants.FL_CURRENCY_CODE_FOR_WEIRD_BANK))
-                            && record.getSign().equalsIgnoreCase(Constants.DEBIT)) {
+                            && record.isDebit()) {
                         recordAmountFL = record.getAmount().add(recordAmountFL);
                     }
                     if (record.getCurrency().getCode().equals(Constants.EUR_CURRENCY_CODE)
-                            && record.getSign().equalsIgnoreCase(Constants.DEBIT)) {
+                            && record.isDebit()) {
                         recordAmountEUR = record.getAmount().add(recordAmountEUR);
                     }
                     if (record.getCurrency().getCode().equals(Constants.USD_CURRENCY_CODE)
-                            && record.getSign().equalsIgnoreCase(Constants.DEBIT)) {
+                            && record.isDebit()) {
                         recordAmountUSD = record.getAmount().add(recordAmountUSD);
                     }
                 }
@@ -170,39 +170,31 @@ public class ConfirmationLetterTally {
                         && record.getFeeRecord().compareTo(new Integer(0)) == 0) {
                     if ((record.getCurrency().getCode().equals(Constants.FL_CURRENCY_CODE)
                             || record.getCurrency().getCode().equals(Constants.FL_CURRENCY_CODE_FOR_WEIRD_BANK))) {
-                        if (record.getSign().equalsIgnoreCase(Constants.DEBIT)) {
+                        if (record.isDebit()) {
                             recordAmountDebitFL = record.getAmount().add(recordAmountDebitFL);
-                        }
-                        if (record.getSign().equalsIgnoreCase(Constants.CREDIT)) {
+                        } else {
                             recordAmountCreditFL = record.getAmount().add(recordAmountCreditFL);
                         }
 
                         if (record.getCurrency().getCode().equals(Constants.EUR_CURRENCY_CODE)) {
-
-                            if (record.getSign().equalsIgnoreCase(Constants.DEBIT)) {
+                            if (record.isDebit()) {
                                 recordAmountDebitEUR = record.getAmount().add(recordAmountDebitEUR);
-                            }
-                            if (record.getSign().equalsIgnoreCase(Constants.CREDIT)) {
+                            } else {
                                 recordAmountCreditEUR = record.getAmount().add(recordAmountCreditEUR);
                             }
-
                         }
-
                     }
                 }
 
                 if (record.getCurrency().getCode().equals(Constants.USD_CURRENCY_CODE)) {
-
-                    if (record.getSign().equalsIgnoreCase(Constants.DEBIT)) {
+                    if (record.isDebit()) {
                         recordAmountDebitUSD = record.getAmount().add(recordAmountDebitUSD);
-                    }
-                    if (record.getSign().equalsIgnoreCase(Constants.CREDIT)) {
+                    } else {
                         recordAmountCreditUSD = record.getAmount().add(recordAmountCreditUSD);
                     }
-
                 }
-
             }
+
             // Sansduplicate
             for (TempRecord sansDupRec : sansDuplicateFaultRecordsList) {
                 Integer currencyCode = sansDupRec.getCurrencyCode();
@@ -219,21 +211,21 @@ public class ConfirmationLetterTally {
                     if (currencyCode.equals(Constants.FL_CURRENCY_CODE)
                             || currencyCode.equals(Constants.FL_CURRENCY_CODE_FOR_WEIRD_BANK)) {
 
-                        if (sansDupRec.getSign().equalsIgnoreCase(Constants.DEBIT)) {
+                        if (sansDupRec.isDebit()) {
                             amountSansDebitFL = new BigDecimal(sansDupRec.getAmount()).add(amountSansDebitFL);
                         } else {
                             amountSansCreditFL = new BigDecimal(sansDupRec.getAmount()).add(amountSansCreditFL);
                         }
                     }
                     if (currencyCode.equals(Constants.USD_CURRENCY_CODE)) {
-                        if (sansDupRec.getSign().equalsIgnoreCase(Constants.DEBIT)) {
+                        if (sansDupRec.isDebit()) {
                             amountSansDebitUSD = new BigDecimal(sansDupRec.getAmount()).add(amountSansDebitUSD);
                         } else {
                             amountSansCreditUSD = new BigDecimal(sansDupRec.getAmount()).add(amountSansCreditUSD);
                         }
                     }
                     if (currencyCode.equals(Constants.EUR_CURRENCY_CODE)) {
-                        if (sansDupRec.getSign().equalsIgnoreCase(Constants.DEBIT)) {
+                        if (sansDupRec.isDebit()) {
                             amountSansDebitEUR = new BigDecimal(sansDupRec.getAmount()).add(amountSansDebitEUR);
                         } else {
                             amountSansCreditEUR = new BigDecimal(sansDupRec.getAmount()).add(amountSansCreditEUR);
