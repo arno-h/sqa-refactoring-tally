@@ -1,5 +1,6 @@
 package com.example.domain;
 
+import java.math.BigDecimal;
 import java.util.Map;
 
 public class Client {
@@ -28,7 +29,7 @@ public class Client {
         return counterTransfer;
     }
 
-    public String getAmountDivider() {
-        return amountDivider;
+    public BigDecimal getAmountDivider() {
+        return new BigDecimal(amountDivider);
     }
 }
