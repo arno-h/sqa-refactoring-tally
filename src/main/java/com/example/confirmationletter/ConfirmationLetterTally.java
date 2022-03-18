@@ -234,64 +234,52 @@ public class ConfirmationLetterTally {
 
             Map<String, BigDecimal> retrievedAccountNumberAmounts = calculateAmountsFaultyAccountNumber(
                     faultyAccountNumberRecordList, client);
-            if (retrievedAccountNumberAmounts.get("FaultyAccDebitFL") != null && amountSansDebitFL != null) {
+            if (retrievedAccountNumberAmounts.get("FaultyAccDebitFL") != null) {
                 totalDebitFL = recordAmountDebitFL
                         .add(amountSansDebitFL)
                         .subtract(retrievedAccountNumberAmounts.get("FaultyAccDebitFL"));
-            } else if (amountSansDebitFL != null) {
-                totalDebitFL = recordAmountDebitFL.add(amountSansDebitFL);
             } else {
-                totalDebitFL = recordAmountDebitFL;
+                totalDebitFL = recordAmountDebitFL.add(amountSansDebitFL);
             }
 
-            if (retrievedAccountNumberAmounts.get("FaultyAccCreditFL") != null && amountSansCreditFL != null) {
+            if (retrievedAccountNumberAmounts.get("FaultyAccCreditFL") != null) {
                 totalCreditFL = recordAmountCreditFL
                         .add(amountSansCreditFL)
                         .subtract(retrievedAccountNumberAmounts.get("FaultyAccCreditFL"));
-            } else if (amountSansCreditFL != null) {
-                totalCreditFL = recordAmountCreditFL.add(amountSansCreditFL);
             } else {
-                totalCreditFL = recordAmountCreditFL;
+                totalCreditFL = recordAmountCreditFL.add(amountSansCreditFL);
             }
 
-            if (retrievedAccountNumberAmounts.get("FaultyAccDebitUSD") != null && amountSansDebitUSD != null) {
+            if (retrievedAccountNumberAmounts.get("FaultyAccDebitUSD") != null) {
                 totalDebitUSD = recordAmountDebitUSD
                         .add(amountSansDebitUSD)
                         .subtract(retrievedAccountNumberAmounts.get("FaultyAccDebitUSD"));
-            } else if (amountSansDebitUSD != null) {
-                totalDebitUSD = recordAmountDebitUSD.add(amountSansDebitUSD);
             } else {
-                totalDebitUSD = recordAmountDebitUSD;
+                totalDebitUSD = recordAmountDebitUSD.add(amountSansDebitUSD);
             }
 
-            if (retrievedAccountNumberAmounts.get("FaultyAccCreditUSD") != null && amountSansCreditUSD != null) {
+            if (retrievedAccountNumberAmounts.get("FaultyAccCreditUSD") != null) {
                 totalCreditUSD = recordAmountCreditUSD
                         .add(amountSansCreditUSD)
                         .subtract(retrievedAccountNumberAmounts.get("FaultyAccCreditUSD"));
-            } else if (amountSansCreditUSD != null) {
-                totalCreditUSD = recordAmountCreditUSD.add(amountSansCreditUSD);
             } else {
-                totalCreditUSD = recordAmountCreditUSD;
+                totalCreditUSD = recordAmountCreditUSD.add(amountSansCreditUSD);
             }
 
-            if (retrievedAccountNumberAmounts.get("FaultyAccDebitEUR") != null && amountSansDebitEUR != null) {
+            if (retrievedAccountNumberAmounts.get("FaultyAccDebitEUR") != null) {
                 totalDebitEUR = recordAmountDebitEUR
                         .add(amountSansDebitEUR)
                         .subtract(retrievedAccountNumberAmounts.get("FaultyAccDebitEUR"));
-            } else if (amountSansDebitEUR != null) {
-                totalDebitEUR = recordAmountDebitEUR.add(amountSansDebitEUR);
             } else {
-                totalDebitEUR = recordAmountDebitEUR;
+                totalDebitEUR = recordAmountDebitEUR.add(amountSansDebitEUR);
             }
 
-            if (retrievedAccountNumberAmounts.get("FaultyAccCreditEUR") != null && amountSansCreditEUR != null) {
+            if (retrievedAccountNumberAmounts.get("FaultyAccCreditEUR") != null) {
                 totalCreditEUR = recordAmountCreditEUR
                         .add(amountSansCreditEUR)
                         .subtract(retrievedAccountNumberAmounts.get("FaultyAccCreditEUR"));
-            } else if (amountSansCreditEUR != null) {
-                totalCreditEUR = recordAmountCreditEUR.add(amountSansCreditEUR);
             } else {
-                totalCreditEUR = recordAmountCreditEUR;
+                totalCreditEUR = recordAmountCreditEUR.add(amountSansCreditEUR);
             }
 
             recordAmountFL = totalDebitFL.subtract(totalCreditFL).abs();
