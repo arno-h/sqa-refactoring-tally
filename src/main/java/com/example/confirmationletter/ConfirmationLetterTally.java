@@ -17,14 +17,12 @@ public class ConfirmationLetterTally {
     public Map<String, BigDecimal> calculateAmounts(
             Client client,
             List<Record> records,
-            CurrencyDao currencyDao,
-            List<com.example.record.domain.FaultRecord> faultyRecords,
             List<TempRecord> faultyAccountNumberRecordList,
             List<TempRecord> sansDuplicateFaultRecordsList,
             Map<Integer, BatchTotal> batchTotals
     ) {
-        Map<String, BigDecimal> result = calculateRetrieveAmounts(records, faultyRecords,
-                client, faultyAccountNumberRecordList, sansDuplicateFaultRecordsList);
+        Map<String, BigDecimal> result = calculateRetrieveAmounts(
+                records, client, faultyAccountNumberRecordList, sansDuplicateFaultRecordsList);
         result.put("CreditBatchTotal", batchTotalSum(
                 batchTotals.values(),
                 client.getAmountDivider(),
@@ -57,7 +55,7 @@ public class ConfirmationLetterTally {
 
             if (faultyAccountNumberRecord.getCurrencyCode() == null) {
                 String currencyId = currencyDao.retrieveCurrencyDefault(client.getProfile());
-                Currency currency = currencyDao.retrieveCurrencyOnId(new Integer(currencyId));
+                Currency currency = currencyDao.retrieveCurrencyOnId(Integer.valueOf(currencyId));
                 faultyAccountNumberRecord.setCurrencyCode(currency.getCode());
             }
 
@@ -105,7 +103,6 @@ public class ConfirmationLetterTally {
 
     private Map<String, BigDecimal> calculateRetrieveAmounts(
             List<Record> records,
-            List<com.example.record.domain.FaultRecord> faultyRecords,
             Client client,
             List<TempRecord> faultyAccountNumberRecordList,
             List<TempRecord> sansDuplicateFaultRecordsList) {
@@ -132,13 +129,13 @@ public class ConfirmationLetterTally {
         BigDecimal amountSansCreditUSD = new BigDecimal(0);
         BigDecimal amountSansCreditEUR = new BigDecimal(0);
 
-        BigDecimal totalDebitFL = new BigDecimal(0);
-        BigDecimal totalDebitUSD = new BigDecimal(0);
-        BigDecimal totalDebitEUR = new BigDecimal(0);
+        BigDecimal totalDebitFL;
+        BigDecimal totalDebitUSD;
+        BigDecimal totalDebitEUR;
 
-        BigDecimal totalCreditFL = new BigDecimal(0);
-        BigDecimal totalCreditUSD = new BigDecimal(0);
-        BigDecimal totalCreditEUR = new BigDecimal(0);
+        BigDecimal totalCreditFL;
+        BigDecimal totalCreditUSD;
+        BigDecimal totalCreditEUR;
 
         if (client.getCounterTransfer().equalsIgnoreCase(Constants.TRUE)) {
             for (Record record : records) {
@@ -166,8 +163,8 @@ public class ConfirmationLetterTally {
         else {
 
             for (Record record : records) {
-                if (record.getIsCounterTransferRecord().compareTo(new Integer(0)) == 0
-                        && record.getFeeRecord().compareTo(new Integer(0)) == 0) {
+                if (record.getIsCounterTransferRecord().compareTo(0) == 0
+                        && record.getFeeRecord().compareTo(0) == 0) {
                     if ((record.getCurrency().getCode().equals(Constants.FL_CURRENCY_CODE)
                             || record.getCurrency().getCode().equals(Constants.FL_CURRENCY_CODE_FOR_WEIRD_BANK))) {
                         if (record.isDebit()) {
@@ -204,7 +201,7 @@ public class ConfirmationLetterTally {
                 }
                 if (currencyCode == null) {
                     String currencyId = currencyDao.retrieveCurrencyDefault(client.getProfile());
-                    Currency currency = currencyDao.retrieveCurrencyOnId(new Integer(currencyId));
+                    Currency currency = currencyDao.retrieveCurrencyOnId(Integer.valueOf(currencyId));
                     sansDupRec.setCurrencyCode(currency.getCode());
                 } else {
 

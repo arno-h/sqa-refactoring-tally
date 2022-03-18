@@ -49,8 +49,7 @@ public class TestConfirmationLetterTally {
         batchTotals.put(2, new BatchTotal(BigDecimal.valueOf(2000), BigDecimal.valueOf(2100)));
         batchTotals.put(3, new BatchTotal(BigDecimal.valueOf(3000), BigDecimal.valueOf(1200)));
 
-        Map<String, BigDecimal> res = clt.calculateAmounts(client, lr,
-                new CurrencyDao(), null, ltr, ltr2, batchTotals);
+        Map<String, BigDecimal> res = clt.calculateAmounts(client, lr, ltr, ltr2, batchTotals);
         Assert.assertEquals(BigDecimal.valueOf(200), res.get("EUR"));
         Assert.assertEquals(BigDecimal.valueOf(1970), res.get("FLD"));
         Assert.assertEquals(BigDecimal.valueOf(60), res.get("CreditBatchTotal"));
