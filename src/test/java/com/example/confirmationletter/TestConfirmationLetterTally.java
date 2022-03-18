@@ -31,11 +31,11 @@ public class TestConfirmationLetterTally {
         ltr.add(new TempRecord("+", fl, "90"));
 
         List<TempRecord> ltr2 = new ArrayList<>();
-        ltr.add(new TempRecord("+", eur, "130"));
-        ltr.add(new TempRecord("+", eur, "180"));
-        ltr.add(new TempRecord("-", fl, "2130"));
-        ltr.add(new TempRecord("-", fl, "270"));
-        ltr.add(new TempRecord("+", fl, "290"));
+        ltr2.add(new TempRecord("+", eur, "130"));
+        ltr2.add(new TempRecord("+", eur, "180"));
+        ltr2.add(new TempRecord("-", fl, "2130"));
+        ltr2.add(new TempRecord("-", fl, "270"));
+        ltr2.add(new TempRecord("+", fl, "290"));
         Bank b1 = new Bank("Scrooge Inc.");
 
         List<Record> lr = new ArrayList<>();
@@ -51,35 +51,35 @@ public class TestConfirmationLetterTally {
 
         Map<String, BigDecimal> res = clt.calculateAmounts(client, lr,
                 new CurrencyDao(), null, ltr, ltr2, batchTotals);
-        Assert.assertEquals(BigDecimal.valueOf(420), res.get("EUR"));
-        Assert.assertEquals(BigDecimal.valueOf(2250), res.get("FLD"));
+        Assert.assertEquals(BigDecimal.valueOf(200), res.get("EUR"));
+        Assert.assertEquals(BigDecimal.valueOf(1970), res.get("FLD"));
         Assert.assertEquals(BigDecimal.valueOf(60), res.get("CreditBatchTotal"));
         Assert.assertEquals(BigDecimal.valueOf(58), res.get("DebitBatchTotal"));
     }
 
     @Test
-    public void creditbatchTotalWithoutFractions() {
+    public void batchTotalSumWithoutFractions() {
         List<BatchTotal> batchTotals = new ArrayList<>();
         batchTotals.add(new BatchTotal(BigDecimal.valueOf(1000), BigDecimal.ZERO));
         batchTotals.add(new BatchTotal(BigDecimal.valueOf(2000), BigDecimal.ZERO));
         batchTotals.add(new BatchTotal(BigDecimal.valueOf(3000), BigDecimal.ZERO));
 
         ConfirmationLetterTally clt = new ConfirmationLetterTally();
-        BigDecimal result = clt.creditBatchTotal(batchTotals, BigDecimal.valueOf(100),
+        BigDecimal result = clt.batchTotalSum(batchTotals, BigDecimal.valueOf(100),
                 BatchTotal::getCreditValue);
 
         Assert.assertEquals(BigDecimal.valueOf(60), result);
     }
 
     @Test
-    public void creditbatchTotalWithFractions() {
+    public void batchTotalSumWithFractions() {
         List<BatchTotal> batchTotals = new ArrayList<>();
         batchTotals.add(new BatchTotal(BigDecimal.ZERO, BigDecimal.valueOf(1010)));
         batchTotals.add(new BatchTotal(BigDecimal.ZERO, BigDecimal.valueOf(2001)));
         batchTotals.add(new BatchTotal(BigDecimal.ZERO, BigDecimal.valueOf(3005)));
 
         ConfirmationLetterTally clt = new ConfirmationLetterTally();
-        BigDecimal result = clt.creditBatchTotal(batchTotals, BigDecimal.valueOf(100),
+        BigDecimal result = clt.batchTotalSum(batchTotals, BigDecimal.valueOf(100),
                 BatchTotal::getCreditCounterValueForDebit);
 
         Assert.assertEquals(BigDecimal.valueOf(60.16), result);

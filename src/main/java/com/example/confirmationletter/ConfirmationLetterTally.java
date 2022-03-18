@@ -25,11 +25,11 @@ public class ConfirmationLetterTally {
     ) {
         Map<String, BigDecimal> result = calculateRetrieveAmounts(records, faultyRecords,
                 client, faultyAccountNumberRecordList, sansDuplicateFaultRecordsList);
-        result.put("CreditBatchTotal", creditBatchTotal(
+        result.put("CreditBatchTotal", batchTotalSum(
                 batchTotals.values(),
                 client.getAmountDivider(),
                 BatchTotal::getCreditValue));
-        result.put("DebitBatchTotal", creditBatchTotal(
+        result.put("DebitBatchTotal", batchTotalSum(
                 batchTotals.values(),
                 client.getAmountDivider(),
                 BatchTotal::getCreditCounterValueForDebit));
@@ -388,8 +388,8 @@ public class ConfirmationLetterTally {
         //  BigDecimal BatchTotal::getCreditValue()
     }
 
-    BigDecimal creditBatchTotal(Collection<BatchTotal> batchTotals, BigDecimal amountDivider,
-                                BatchValueAccessor value) {
+    BigDecimal batchTotalSum(Collection<BatchTotal> batchTotals, BigDecimal amountDivider,
+                             BatchValueAccessor value) {
         BigDecimal sum = BigDecimal.ZERO;
         for (BatchTotal total : batchTotals) {
             sum = sum.add(value.get(total)); // total.getCreditValue()
