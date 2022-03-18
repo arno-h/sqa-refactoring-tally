@@ -72,6 +72,24 @@ public class ConfirmationLetterTally {
                 }
             }
         }
+
+        void addTally(TallyBuilder other) {
+            creditFL = creditFL.add(other.creditFL);
+            creditUSD = creditUSD.add(other.creditUSD);
+            creditEUR = creditEUR.add(other.creditEUR);
+            debitFL = debitFL.add(other.debitFL);
+            debitUSD = debitUSD.add(other.debitUSD);
+            debitEUR = debitEUR.add(other.debitEUR);
+        }
+
+        void subtractTally(TallyBuilder other) {
+            creditFL = creditFL.subtract(other.creditFL);
+            creditUSD = creditUSD.subtract(other.creditUSD);
+            creditEUR = creditEUR.subtract(other.creditEUR);
+            debitFL = debitFL.subtract(other.debitFL);
+            debitUSD = debitUSD.subtract(other.debitUSD);
+            debitEUR = debitEUR.subtract(other.debitEUR);
+        }
     }
 
     private Map<String, BigDecimal> calculateRetrieveAmounts(
@@ -134,26 +152,13 @@ public class ConfirmationLetterTally {
             }
         }
 
-        TallyBuilder retrievedFaultyAmounts = calculateAmountsFaultyAccountNumber(
-                faultyAccountNumberRecordList, client);
-        BigDecimal totalDebitFL = recordAmountTally.debitFL.add(sansDupRecTally.debitFL);
-        totalDebitFL = totalDebitFL.subtract(retrievedFaultyAmounts.debitFL);
-        BigDecimal totalCreditFL = recordAmountTally.creditFL.add(sansDupRecTally.creditFL);
-        totalCreditFL = totalCreditFL.subtract(retrievedFaultyAmounts.creditFL);
+        recordAmountTally.addTally(sansDupRecTally);
+        TallyBuilder retrievedFaultyAmounts = amountsFaultyAccountNumber(faultyAccountNumberRecordList, client);
+        recordAmountTally.subtractTally(retrievedFaultyAmounts);
 
-        BigDecimal totalDebitUSD = recordAmountTally.debitUSD.add(sansDupRecTally.debitUSD);
-        totalDebitUSD = totalDebitUSD.subtract(retrievedFaultyAmounts.debitUSD);
-        BigDecimal totalCreditUSD = recordAmountTally.creditUSD.add(sansDupRecTally.creditUSD);
-        totalCreditUSD = totalCreditUSD.subtract(retrievedFaultyAmounts.creditUSD);
-
-        BigDecimal totalDebitEUR = recordAmountTally.debitEUR.add(sansDupRecTally.debitEUR);
-        totalDebitEUR = totalDebitEUR.subtract(retrievedFaultyAmounts.debitEUR);
-        BigDecimal totalCreditEUR = recordAmountTally.creditEUR.add(sansDupRecTally.creditEUR);
-        totalCreditEUR = totalCreditEUR.subtract(retrievedFaultyAmounts.creditEUR);
-
-        BigDecimal recordAmountFL = totalDebitFL.subtract(totalCreditFL).abs();
-        BigDecimal recordAmountUSD = totalDebitUSD.subtract(totalCreditUSD).abs();
-        BigDecimal recordAmountEUR = totalDebitEUR.subtract(totalCreditEUR).abs();
+        BigDecimal recordAmountFL = recordAmountTally.debitFL.subtract(recordAmountTally.creditFL).abs();
+        BigDecimal recordAmountUSD = recordAmountTally.debitUSD.subtract(recordAmountTally.creditUSD).abs();
+        BigDecimal recordAmountEUR = recordAmountTally.debitEUR.subtract(recordAmountTally.creditEUR).abs();
 
         retrievedAmounts.put(Constants.CURRENCY_EURO, recordAmountEUR);
         retrievedAmounts.put(Constants.CURRENCY_USD, recordAmountUSD);
@@ -162,7 +167,7 @@ public class ConfirmationLetterTally {
         return retrievedAmounts;
     }
 
-    private TallyBuilder calculateAmountsFaultyAccountNumber(
+    private TallyBuilder amountsFaultyAccountNumber(
             List<TempRecord> faultyAccountNumberRecordList, Client client) {
 
         TallyBuilder faultyAccountTally = new TallyBuilder();
