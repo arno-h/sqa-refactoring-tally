@@ -377,17 +377,15 @@ public class ConfirmationLetterTally {
         return retrievedAmounts;
     }
 
-    private BigDecimal creditBatchTotal(Map<Integer, BatchTotal> batchTotals,
-                                        Client client) {
-        Double sum = new Double(0);
-        Iterator<BatchTotal> itr = batchTotals.values().iterator();
-        while (itr.hasNext()) {
-            BatchTotal total = itr.next();
-
-            sum = sum + total.getCreditValue().doubleValue();
+    BigDecimal creditBatchTotal(Map<Integer, BatchTotal> batchTotals,
+                                Client client) {
+        BigDecimal sum = BigDecimal.ZERO;
+        for (BatchTotal total : batchTotals.values()) {
+            sum = sum.add(total.getCreditValue());
         }
-        Double d = sum / new Double(client.getAmountDivider());
-        return new BigDecimal(d);
+        BigDecimal divider = new BigDecimal(client.getAmountDivider());
+        sum = sum.divide(divider);
+        return sum;
     }
 
     private BigDecimal debitBatchTotal(Map<Integer, BatchTotal> batchTotals,
