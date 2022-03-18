@@ -1,18 +1,17 @@
 package com.example.confirmationletter;
 
 import com.example.dao.CurrencyDao;
-import com.example.domain.Currency;
 import com.example.domain.*;
-import com.example.domain.TempRecord;
 import com.example.service.impl.Constants;
 import com.example.service.impl.StringUtils;
 
 import java.math.BigDecimal;
-import java.util.*;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 public class ConfirmationLetterTally {
-
-    private CurrencyDao currencyDao;
 
     public Map<String, BigDecimal> calculateAmounts(
             Client client,
@@ -45,7 +44,7 @@ public class ConfirmationLetterTally {
         }
     }
 
-    private Map<String, BigDecimal>  counterTransferAmounts(List<Record> records) {
+    private Map<String, BigDecimal> counterTransferAmounts(List<Record> records) {
         TallyBuilder recordAmountTally = new TallyBuilder();
         for (Record record : records) {
             if (record.getFeeRecord() != 1) {
@@ -104,8 +103,8 @@ public class ConfirmationLetterTally {
                 tempRecord.setSign(client.getCreditDebit());
             }
             if (tempRecord.getCurrencyCode() == null) {
-                String currencyId = currencyDao.retrieveCurrencyDefault(client.getProfile());
-                Currency currency = currencyDao.retrieveCurrencyOnId(Integer.valueOf(currencyId));
+                String currencyId = CurrencyDao.retrieveCurrencyDefault(client.getProfile());
+                Currency currency = CurrencyDao.retrieveCurrencyOnId(Integer.valueOf(currencyId));
                 tempRecord.setCurrencyCode(currency.getCode());
             }
         }
