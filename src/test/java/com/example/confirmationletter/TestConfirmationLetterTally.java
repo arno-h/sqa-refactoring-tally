@@ -36,11 +36,15 @@ public class TestConfirmationLetterTally {
         ltr2.add(new TempRecord("+", fl, BigDecimal.valueOf(290)));
         Bank b1 = new Bank("Scrooge Inc.");
 
+        Beneficiary beneficiary1 = new Beneficiary(b1, "123-45678", "Martin M. Murray");
+        Beneficiary beneficiary2 = new Beneficiary(b1, "123-45681", "Mia M. Mitchell");
+        Beneficiary beneficiary3 = new Beneficiary(b1, "223-45677", "Jane J. Jones");
+
         List<Record> lr = new ArrayList<>();
-        lr.add(new Record(1, "+", eur, BigDecimal.valueOf(100), 0, "123-45678", "Martin M. Murray", b1));
-        lr.add(new Record(1, "+", eur, BigDecimal.valueOf(20), 0, "123-45681", "Mia M. Mitchell", b1));
-        lr.add(new Record(0, "+", fl, BigDecimal.valueOf(40), 1, "223-45677", "Jane J. Jones", b1));
-        lr.add(new Record(0, "+", fl, BigDecimal.valueOf(30), 0, "223-45677", "Jane J. Jones", b1));
+        lr.add(new Record(1, "+", eur, BigDecimal.valueOf(100), 0, beneficiary1));
+        lr.add(new Record(1, "+", eur, BigDecimal.valueOf(20), 0, beneficiary2));
+        lr.add(new Record(0, "+", fl, BigDecimal.valueOf(40), 1, beneficiary3));
+        lr.add(new Record(0, "+", fl, BigDecimal.valueOf(30), 0, beneficiary3));
 
         Map<Integer, BatchTotal> batchTotals = new HashMap<>();
         batchTotals.put(1, new BatchTotal(BigDecimal.valueOf(1000), BigDecimal.valueOf(2500)));

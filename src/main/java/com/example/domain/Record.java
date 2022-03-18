@@ -3,21 +3,16 @@ package com.example.domain;
 import java.math.BigDecimal;
 
 public class Record extends TempRecord {
-    final Bank bank;
-    final String beneficiaryAccountNumber;
-    final String beneficiaryName;
+    final Beneficiary beneficiary;
     final Integer feeRecord;
     final Integer isCounterTransferRecord;
 
     public Record(Integer feeRecord, String sign, Currency currency, BigDecimal amount,
-                  Integer isCounterTransferRecord, String beneficiaryAccountNumber,
-                  String beneficiaryName, Bank bank) {
+                  Integer isCounterTransferRecord, Beneficiary beneficiary) {
         super(sign, currency, amount);
         this.feeRecord = feeRecord;
         this.isCounterTransferRecord = isCounterTransferRecord;
-        this.beneficiaryAccountNumber = beneficiaryAccountNumber;
-        this.beneficiaryName = beneficiaryName;
-        this.bank = bank;
+        this.beneficiary = beneficiary;
     }
 
     public boolean isFeeRecord() {
@@ -28,15 +23,7 @@ public class Record extends TempRecord {
         return isCounterTransferRecord == 1;
     }
 
-    public String getBeneficiaryAccountNumber() {
-        return beneficiaryAccountNumber;
-    }
-
-    public String getBeneficiaryName() {
-        return beneficiaryName;
-    }
-
-    public Bank getBank() {
-        return bank;
+    public Beneficiary getBeneficiary() {
+        return beneficiary;
     }
 }

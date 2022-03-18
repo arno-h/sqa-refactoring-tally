@@ -5,9 +5,11 @@ import com.example.domain.*;
 import com.example.service.impl.StringUtils;
 
 import java.math.BigDecimal;
+import java.math.MathContext;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
+import java.util.function.Function;
 
 public class ConfirmationLetterTally {
 
@@ -90,17 +92,13 @@ public class ConfirmationLetterTally {
         }
     }
 
-    interface BatchValueAccessor {
-        BigDecimal get(BatchTotal batchTotal);
-    }
-
     BigDecimal batchTotalSum(Collection<BatchTotal> batchTotals, BigDecimal amountDivider,
-                             BatchValueAccessor value) {
+                             Function<BatchTotal, BigDecimal> value) {
         BigDecimal sum = BigDecimal.ZERO;
         for (BatchTotal total : batchTotals) {
-            sum = sum.add(value.get(total));
+            sum = sum.add(value.apply(total));
         }
-        sum = sum.divide(amountDivider);
+        sum = sum.divide(amountDivider, MathContext.DECIMAL64);
         return sum;
     }
 }

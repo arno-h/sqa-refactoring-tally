@@ -7,10 +7,11 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
+import java.util.function.BinaryOperator;
 
 class TallyBuilder {
     private static class DecimalMap {
-        Map<String, BigDecimal> amountMap = new HashMap<>();
+        final Map<String, BigDecimal> amountMap = new HashMap<>();
 
         void add(String currencyName, BigDecimal amount) {
             BigDecimal current = amountMap.getOrDefault(currencyName, BigDecimal.ZERO);
@@ -18,26 +19,25 @@ class TallyBuilder {
         }
 
         void addAll(DecimalMap other) {
-            Set<String> currencyNames = new HashSet<>(amountMap.keySet());
-            currencyNames.addAll(other.amountMap.keySet());
-            for (String currencyName : currencyNames) {
-                amountMap.put(currencyName, amountMap.getOrDefault(currencyName, BigDecimal.ZERO).add(
-                        other.amountMap.getOrDefault(currencyName, BigDecimal.ZERO)));
-            }
+            opAll(BigDecimal::add, other);
         }
 
         void subtractAll(DecimalMap other) {
+            opAll(BigDecimal::subtract, other);
+        }
+
+        void opAll(BinaryOperator<BigDecimal> op, DecimalMap other) {
             Set<String> currencyNames = new HashSet<>(amountMap.keySet());
             currencyNames.addAll(other.amountMap.keySet());
             for (String currencyName : currencyNames) {
-                amountMap.put(currencyName, amountMap.getOrDefault(currencyName, BigDecimal.ZERO).subtract(
+                amountMap.put(currencyName, op.apply(amountMap.getOrDefault(currencyName, BigDecimal.ZERO),
                         other.amountMap.getOrDefault(currencyName, BigDecimal.ZERO)));
             }
         }
     }
 
-    DecimalMap debit = new DecimalMap();
-    DecimalMap credit = new DecimalMap();
+    final DecimalMap debit = new DecimalMap();
+    final DecimalMap credit = new DecimalMap();
 
     void add(TempRecord tempRecord) {
         String currencyType = tempRecord.getCurrency().getCurrencyType();
@@ -66,7 +66,7 @@ class TallyBuilder {
         return result.amountMap;
     }
 
-    Map <String, BigDecimal> getDebitMap() {
+    Map<String, BigDecimal> getDebitMap() {
         return debit.amountMap;
     }
 }
