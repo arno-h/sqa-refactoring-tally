@@ -59,26 +59,28 @@ public class TestConfirmationLetterTally {
 
     @Test
     public void creditbatchTotalWithoutFractions() {
-        Map<Integer, BatchTotal> batchTotals = new HashMap<>();
-        batchTotals.put(1, new BatchTotal(BigDecimal.valueOf(1000), BigDecimal.valueOf(2500)));
-        batchTotals.put(2, new BatchTotal(BigDecimal.valueOf(2000), BigDecimal.valueOf(2100)));
-        batchTotals.put(3, new BatchTotal(BigDecimal.valueOf(3000), BigDecimal.valueOf(1200)));
+        List<BatchTotal> batchTotals = new ArrayList<>();
+        batchTotals.add(new BatchTotal(BigDecimal.valueOf(1000), BigDecimal.ZERO));
+        batchTotals.add(new BatchTotal(BigDecimal.valueOf(2000), BigDecimal.ZERO));
+        batchTotals.add(new BatchTotal(BigDecimal.valueOf(3000), BigDecimal.ZERO));
 
         ConfirmationLetterTally clt = new ConfirmationLetterTally();
-        BigDecimal result = clt.creditBatchTotal(batchTotals, BigDecimal.valueOf(100));
+        BigDecimal result = clt.creditBatchTotal(batchTotals, BigDecimal.valueOf(100),
+                BatchTotal::getCreditValue);
 
         Assert.assertEquals(BigDecimal.valueOf(60), result);
     }
 
     @Test
     public void creditbatchTotalWithFractions() {
-        Map<Integer, BatchTotal> batchTotals = new HashMap<>();
-        batchTotals.put(1, new BatchTotal(BigDecimal.valueOf(1010), BigDecimal.ZERO));
-        batchTotals.put(2, new BatchTotal(BigDecimal.valueOf(2001), BigDecimal.ZERO));
-        batchTotals.put(3, new BatchTotal(BigDecimal.valueOf(3005), BigDecimal.ZERO));
+        List<BatchTotal> batchTotals = new ArrayList<>();
+        batchTotals.add(new BatchTotal(BigDecimal.ZERO, BigDecimal.valueOf(1010)));
+        batchTotals.add(new BatchTotal(BigDecimal.ZERO, BigDecimal.valueOf(2001)));
+        batchTotals.add(new BatchTotal(BigDecimal.ZERO, BigDecimal.valueOf(3005)));
 
         ConfirmationLetterTally clt = new ConfirmationLetterTally();
-        BigDecimal result = clt.creditBatchTotal(batchTotals, BigDecimal.valueOf(100));
+        BigDecimal result = clt.creditBatchTotal(batchTotals, BigDecimal.valueOf(100),
+                BatchTotal::getCreditCounterValueForDebit);
 
         Assert.assertEquals(BigDecimal.valueOf(60.16), result);
     }

@@ -25,8 +25,14 @@ public class ConfirmationLetterTally {
     ) {
         Map<String, BigDecimal> result = calculateRetrieveAmounts(records, faultyRecords,
                 client, faultyAccountNumberRecordList, sansDuplicateFaultRecordsList);
-        result.put("CreditBatchTotal", creditBatchTotal(batchTotals, client.getAmountDivider()));
-        result.put("DebitBatchTotal", debitBatchTotal(batchTotals, client));
+        result.put("CreditBatchTotal", creditBatchTotal(
+                batchTotals.values(),
+                client.getAmountDivider(),
+                BatchTotal::getCreditValue));
+        result.put("DebitBatchTotal", creditBatchTotal(
+                batchTotals.values(),
+                client.getAmountDivider(),
+                BatchTotal::getCreditCounterValueForDebit));
         return result;
     }
 
@@ -377,24 +383,18 @@ public class ConfirmationLetterTally {
         return retrievedAmounts;
     }
 
-    BigDecimal creditBatchTotal(Map<Integer, BatchTotal> batchTotals, BigDecimal amountDivider) {
+    interface BatchValueAccessor {
+        BigDecimal get(BatchTotal batchTotal);
+        //  BigDecimal BatchTotal::getCreditValue()
+    }
+
+    BigDecimal creditBatchTotal(Collection<BatchTotal> batchTotals, BigDecimal amountDivider,
+                                BatchValueAccessor value) {
         BigDecimal sum = BigDecimal.ZERO;
-        for (BatchTotal total : batchTotals.values()) {
-            sum = sum.add(total.getCreditValue());
+        for (BatchTotal total : batchTotals) {
+            sum = sum.add(value.get(total)); // total.getCreditValue()
         }
         sum = sum.divide(amountDivider);
         return sum;
-    }
-
-    private BigDecimal debitBatchTotal(Map<Integer, BatchTotal> batchTotals,
-                                       Client client) {
-        Double sum = new Double(0);
-        Iterator<BatchTotal> itr = batchTotals.values().iterator();
-        while (itr.hasNext()) {
-            BatchTotal total = itr.next();
-            sum = sum + total.getCreditCounterValueForDebit().doubleValue();
-        }
-        Double d = sum / client.getAmountDivider().doubleValue();
-        return new BigDecimal(d);
     }
 }
