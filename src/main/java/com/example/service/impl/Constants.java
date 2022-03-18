@@ -1,4 +1,4 @@
-package com.example.record.service.impl;
+package com.example.service.impl;
 
 public class Constants {
     static public final Integer FL_CURRENCY_CODE = 1;

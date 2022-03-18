@@ -1,28 +1,19 @@
 package com.example.domain;
 
-import com.example.record.service.impl.Constants;
-
 import java.math.BigDecimal;
 
-public class Record {
+public class Record extends TempRecord {
     Bank bank;
     String beneficiaryAccountNumber;
     String beneficiaryName;
-
-    String sign;
-    Currency currency;
-    BigDecimal amount;
-
     Integer feeRecord;
     Integer isCounterTransferRecord;
 
     public Record(Integer feeRecord, String sign, Currency currency, BigDecimal amount,
                   Integer isCounterTransferRecord, String beneficiaryAccountNumber,
                   String beneficiaryName, Bank bank) {
+        super(sign, currency, amount);
         this.feeRecord = feeRecord;
-        this.sign = sign;
-        this.currency = currency;
-        this.amount = amount;
         this.isCounterTransferRecord = isCounterTransferRecord;
         this.beneficiaryAccountNumber = beneficiaryAccountNumber;
         this.beneficiaryName = beneficiaryName;
@@ -31,22 +22,6 @@ public class Record {
 
     public Integer getFeeRecord() {
         return feeRecord;
-    }
-
-    public String getSign() {
-        return sign;
-    }
-
-    public boolean isDebit() {
-        return sign.equalsIgnoreCase(Constants.DEBIT);
-    }
-
-    public Currency getCurrency() {
-        return currency;
-    }
-
-    public BigDecimal getAmount() {
-        return amount;
     }
 
     public Integer getIsCounterTransferRecord() {

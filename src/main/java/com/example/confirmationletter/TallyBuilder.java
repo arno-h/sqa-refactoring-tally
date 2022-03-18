@@ -1,8 +1,8 @@
 package com.example.confirmationletter;
 
 import com.example.domain.Record;
-import com.example.record.domain.TempRecord;
-import com.example.record.service.impl.Constants;
+import com.example.domain.TempRecord;
+import com.example.service.impl.Constants;
 
 import java.math.BigDecimal;
 
@@ -14,33 +14,25 @@ class TallyBuilder {
     BigDecimal debitUSD = BigDecimal.ZERO;
     BigDecimal debitEUR = BigDecimal.ZERO;
 
-    void addRecord(Record record) {
-        add(record.getCurrency().getCode(), record.getAmount(), record.isDebit());
-    }
-
-    void addTempRecord(TempRecord record) {
-        add(record.getCurrencyCode(), new BigDecimal(record.getAmount()), record.isDebit());
-    }
-
-    void add(Integer currencyCode, BigDecimal amount, boolean isDebit) {
-        if (currencyCode.equals(Constants.FL_CURRENCY_CODE)
-                || currencyCode.equals(Constants.FL_CURRENCY_CODE_FOR_WEIRD_BANK)) {
-            if (isDebit) {
-                debitFL = amount.add(debitFL);
+    void add(TempRecord record) {
+        if (record.getCurrencyCode().equals(Constants.FL_CURRENCY_CODE)
+                || record.getCurrencyCode().equals(Constants.FL_CURRENCY_CODE_FOR_WEIRD_BANK)) {
+            if (record.isDebit()) {
+                debitFL = record.getAmount().add(debitFL);
             } else {
-                creditFL = amount.add(creditFL);
+                creditFL = record.getAmount().add(creditFL);
             }
-        } else if (currencyCode.equals(Constants.USD_CURRENCY_CODE)) {
-            if (isDebit) {
-                debitUSD = amount.add(debitUSD);
+        } else if (record.getCurrencyCode().equals(Constants.USD_CURRENCY_CODE)) {
+            if (record.isDebit()) {
+                debitUSD = record.getAmount().add(debitUSD);
             } else {
-                creditUSD = amount.add(creditUSD);
+                creditUSD = record.getAmount().add(creditUSD);
             }
-        } else if (currencyCode.equals(Constants.EUR_CURRENCY_CODE)) {
-            if (isDebit) {
-                debitEUR = amount.add(debitEUR);
+        } else if (record.getCurrencyCode().equals(Constants.EUR_CURRENCY_CODE)) {
+            if (record.isDebit()) {
+                debitEUR = record.getAmount().add(debitEUR);
             } else {
-                creditEUR = amount.add(creditEUR);
+                creditEUR = record.getAmount().add(creditEUR);
             }
         }
     }

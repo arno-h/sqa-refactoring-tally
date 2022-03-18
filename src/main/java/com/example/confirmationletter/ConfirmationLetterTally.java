@@ -3,9 +3,9 @@ package com.example.confirmationletter;
 import com.example.dao.CurrencyDao;
 import com.example.domain.Currency;
 import com.example.domain.*;
-import com.example.record.domain.TempRecord;
-import com.example.record.service.impl.Constants;
-import com.example.record.service.impl.StringUtils;
+import com.example.domain.TempRecord;
+import com.example.service.impl.Constants;
+import com.example.service.impl.StringUtils;
 
 import java.math.BigDecimal;
 import java.util.*;
@@ -49,7 +49,7 @@ public class ConfirmationLetterTally {
         TallyBuilder recordAmountTally = new TallyBuilder();
         for (Record record : records) {
             if (record.getFeeRecord() != 1) {
-                recordAmountTally.addRecord(record);
+                recordAmountTally.add(record);
             }
         }
 
@@ -70,18 +70,18 @@ public class ConfirmationLetterTally {
 
         for (Record record : records) {
             if (record.getIsCounterTransferRecord().compareTo(0) == 0 && record.getFeeRecord().compareTo(0) == 0) {
-                recordAmountTally.addRecord(record);
+                recordAmountTally.add(record);
             }
         }
 
         TallyBuilder sansDupRecTally = new TallyBuilder();
         for (TempRecord sansDupRec : sansDuplicateFaultRecordsList) {
-            sansDupRecTally.addTempRecord(sansDupRec);
+            sansDupRecTally.add(sansDupRec);
         }
 
         TallyBuilder faultyAccountTally = new TallyBuilder();
         for (TempRecord faultyAccountNumberRecord : faultyAccountNumberRecordList) {
-            faultyAccountTally.addTempRecord(faultyAccountNumberRecord);
+            faultyAccountTally.add(faultyAccountNumberRecord);
         }
 
         recordAmountTally.addTally(sansDupRecTally);

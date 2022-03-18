@@ -1,4 +1,4 @@
-package com.example.record.service.impl;
+package com.example.service.impl;
 
 public class StringUtils {
     public static boolean isBlank(String str) {
