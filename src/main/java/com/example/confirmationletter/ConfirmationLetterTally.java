@@ -157,10 +157,10 @@ public class ConfirmationLetterTally {
                         recordAmountUSD = record.getAmount().add(recordAmountUSD);
                     }
                 }
-                retrievedAmounts.put(Constants.CURRENCY_EURO, recordAmountEUR);
-                retrievedAmounts.put(Constants.CURRENCY_FL, recordAmountUSD);
-                retrievedAmounts.put(Constants.CURRENCY_FL, recordAmountFL);
             }
+            retrievedAmounts.put(Constants.CURRENCY_EURO, recordAmountEUR);
+            retrievedAmounts.put(Constants.CURRENCY_USD, recordAmountUSD);
+            retrievedAmounts.put(Constants.CURRENCY_FL, recordAmountFL);
         }
         // Not Balanced
         else {
@@ -310,7 +310,7 @@ public class ConfirmationLetterTally {
             recordAmountEUR = totalDebitEUR.subtract(totalCreditEUR).abs();
 
             retrievedAmounts.put(Constants.CURRENCY_EURO, recordAmountEUR);
-            retrievedAmounts.put(Constants.CURRENCY_FL, recordAmountUSD);
+            retrievedAmounts.put(Constants.CURRENCY_USD, recordAmountUSD);
             retrievedAmounts.put(Constants.CURRENCY_FL, recordAmountFL);
 
         }
