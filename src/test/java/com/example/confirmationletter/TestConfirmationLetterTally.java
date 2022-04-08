@@ -24,18 +24,18 @@ public class TestConfirmationLetterTally {
         Currency fl = new Currency(Constants.FL_CURRENCY_CODE, Constants.CURRENCY_FL);
 
         List<TempRecord> ltr = new ArrayList<>();
-        ltr.add(new TempRecord("+", eur, "30"));
-        ltr.add(new TempRecord("+", eur, "80"));
-        ltr.add(new TempRecord("-", fl, "130"));
-        ltr.add(new TempRecord("-", fl, "70"));
-        ltr.add(new TempRecord("+", fl, "90"));
+        ltr.add(new TempRecord("+", eur, BigDecimal.valueOf(30)));
+        ltr.add(new TempRecord("+", eur, BigDecimal.valueOf(80)));
+        ltr.add(new TempRecord("-", fl, BigDecimal.valueOf(130)));
+        ltr.add(new TempRecord("-", fl, BigDecimal.valueOf(70)));
+        ltr.add(new TempRecord("+", fl, BigDecimal.valueOf(90)));
 
         List<TempRecord> ltr2 = new ArrayList<>();
-        ltr.add(new TempRecord("+", eur, "130"));
-        ltr.add(new TempRecord("+", eur, "180"));
-        ltr.add(new TempRecord("-", fl, "2130"));
-        ltr.add(new TempRecord("-", fl, "270"));
-        ltr.add(new TempRecord("+", fl, "290"));
+        ltr.add(new TempRecord("+", eur, BigDecimal.valueOf(130)));
+        ltr.add(new TempRecord("+", eur, BigDecimal.valueOf(180)));
+        ltr.add(new TempRecord("-", fl, BigDecimal.valueOf(2130)));
+        ltr.add(new TempRecord("-", fl, BigDecimal.valueOf(270)));
+        ltr.add(new TempRecord("+", fl, BigDecimal.valueOf(290)));
         Bank b1 = new Bank("Scrooge Inc.");
 
         List<Record> lr = new ArrayList<>();

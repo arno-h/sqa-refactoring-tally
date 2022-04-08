@@ -2,12 +2,14 @@ package com.example.record.domain;
 
 import com.example.domain.Currency;
 
+import java.math.BigDecimal;
+
 public class TempRecord {
     String sign;
     Currency currency;
-    String amount;
+    BigDecimal amount;
 
-    public TempRecord(String sign, Currency currency, String amount) {
+    public TempRecord(String sign, Currency currency, BigDecimal amount) {
         this.sign = sign;
         this.currency = currency;
         this.amount = amount;
@@ -29,11 +31,11 @@ public class TempRecord {
         this.currency.setCode(currencyCode);
     }
 
-    public String getAmount() {
+    public BigDecimal getAmount() {
         return amount;
     }
 
-    public void setAmount(String amount) {
+    public void setAmount(BigDecimal amount) {
         this.amount = amount;
     }
 }

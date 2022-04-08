@@ -54,21 +54,21 @@ public class ConfirmationLetterTally {
             if (tempRecord.getCurrencyCode().equals(Constants.FL_CURRENCY_CODE)
                     || tempRecord.getCurrencyCode().equals(Constants.FL_CURRENCY_CODE_FOR_WEIRD_BANK)) {
                 if (tempRecord.getSign().equalsIgnoreCase(Constants.DEBIT)) {
-                    debitFL = new BigDecimal(tempRecord.getAmount()).add(debitFL);
+                    debitFL = tempRecord.getAmount().add(debitFL);
                 } else {
-                    creditFL = new BigDecimal(tempRecord.getAmount()).add(creditFL);
+                    creditFL = tempRecord.getAmount().add(creditFL);
                 }
             } else if (tempRecord.getCurrencyCode().equals(Constants.USD_CURRENCY_CODE)) {
                 if (tempRecord.getSign().equalsIgnoreCase(Constants.DEBIT)) {
-                    debitUSD = new BigDecimal(tempRecord.getAmount()).add(debitUSD);
+                    debitUSD = tempRecord.getAmount().add(debitUSD);
                 } else {
-                    creditUSD = new BigDecimal(tempRecord.getAmount()).add(creditUSD);
+                    creditUSD = tempRecord.getAmount().add(creditUSD);
                 }
             } else if (tempRecord.getCurrencyCode().equals(Constants.EUR_CURRENCY_CODE)) {
                 if (tempRecord.getSign().equalsIgnoreCase(Constants.DEBIT)) {
-                    debitEUR = new BigDecimal(tempRecord.getAmount()).add(debitEUR);
+                    debitEUR = tempRecord.getAmount().add(debitEUR);
                 } else {
-                    creditEUR = new BigDecimal(tempRecord.getAmount()).add(creditEUR);
+                    creditEUR = tempRecord.getAmount().add(creditEUR);
                 }
             }
         }
