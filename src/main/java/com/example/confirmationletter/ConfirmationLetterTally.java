@@ -15,6 +15,7 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.function.Function;
 
 public class ConfirmationLetterTally {
 
@@ -217,16 +218,11 @@ public class ConfirmationLetterTally {
         return retrievedAmounts;
     }
 
-    interface BatchValueAccessor {
-        BigDecimal get(BatchTotal batchTotal);
-        //  BigDecimal BatchTotal::getCreditValue()
-    }
-
     BigDecimal creditBatchTotal(Collection<BatchTotal> batchTotals, BigDecimal amountDivider,
-                                BatchValueAccessor value) {
+                                Function<BatchTotal, BigDecimal> value) {
         BigDecimal sum = BigDecimal.ZERO;
         for (BatchTotal total : batchTotals) {
-            sum = sum.add(value.get(total)); // total.getCreditValue()
+            sum = sum.add(value.apply(total));
         }
         sum = sum.divide(amountDivider);
         return sum;
