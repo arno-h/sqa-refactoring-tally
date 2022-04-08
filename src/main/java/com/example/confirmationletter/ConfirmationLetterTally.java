@@ -280,7 +280,7 @@ public class ConfirmationLetterTally {
             recordAmountEUR = totalDebitEUR.subtract(totalCreditEUR).abs();
 
             retrievedAmounts.put(Constants.CURRENCY_EURO, recordAmountEUR);
-            retrievedAmounts.put(Constants.CURRENCY_FL, recordAmountUSD);
+            retrievedAmounts.put(Constants.CURRENCY_USD, recordAmountUSD);
             retrievedAmounts.put(Constants.CURRENCY_FL, recordAmountFL);
 
         }
