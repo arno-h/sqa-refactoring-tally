@@ -1,14 +1,19 @@
 package com.example.confirmationletter;
 
 import com.example.dao.CurrencyDao;
+import com.example.domain.BatchTotal;
+import com.example.domain.Client;
 import com.example.domain.Currency;
-import com.example.domain.*;
+import com.example.domain.Record;
 import com.example.record.domain.TempRecord;
 import com.example.record.service.impl.Constants;
 import com.example.record.service.impl.StringUtils;
 
 import java.math.BigDecimal;
-import java.util.*;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 public class ConfirmationLetterTally {
 
@@ -36,11 +41,7 @@ public class ConfirmationLetterTally {
         return result;
     }
 
-    // Calculate sum amount from faultyAccountnumber list
-    private Map<String, BigDecimal> calculateAmountsFaultyAccountNumber(
-            List<TempRecord> faultyAccountNumberRecordList, Client client) {
-        Map<String, BigDecimal> retrievedAmountsFaultyAccountNumber = new HashMap<String, BigDecimal>();
-
+    class Tally {
         BigDecimal faultyAccRecordAmountCreditFL = new BigDecimal(0);
         BigDecimal faultyAccRecordAmountCreditUSD = new BigDecimal(0);
         BigDecimal faultyAccRecordAmountCreditEUR = new BigDecimal(0);
@@ -49,18 +50,7 @@ public class ConfirmationLetterTally {
         BigDecimal faultyAccRecordAmountDebitUSD = new BigDecimal(0);
         BigDecimal faultyAccRecordAmountDebitEUR = new BigDecimal(0);
 
-        for (TempRecord faultyAccountNumberRecord : faultyAccountNumberRecordList) {
-            // FL
-            if (StringUtils.isBlank(faultyAccountNumberRecord.getSign())) {
-                faultyAccountNumberRecord.setSign(client.getCreditDebit());
-            }
-
-            if (faultyAccountNumberRecord.getCurrencyCode() == null) {
-                String currencyId = currencyDao.retrieveCurrencyDefault(client.getProfile());
-                Currency currency = currencyDao.retrieveCurrencyOnId(new Integer(currencyId));
-                faultyAccountNumberRecord.setCurrencyCode(currency.getCode());
-            }
-
+        void addTempRecord(TempRecord faultyAccountNumberRecord) {
             if (faultyAccountNumberRecord.getCurrencyCode().equals(
                     Constants.FL_CURRENCY_CODE)
                     || faultyAccountNumberRecord.getCurrencyCode().equals(
@@ -103,23 +93,41 @@ public class ConfirmationLetterTally {
                             .add(faultyAccRecordAmountCreditEUR);
                 }
             }
-
-            retrievedAmountsFaultyAccountNumber.put("FaultyAccDebitFL",
-                    faultyAccRecordAmountDebitFL);
-            retrievedAmountsFaultyAccountNumber.put("FaultyAccDebitUSD",
-                    faultyAccRecordAmountDebitUSD);
-            retrievedAmountsFaultyAccountNumber.put("FaultyAccDebitEUR",
-                    faultyAccRecordAmountDebitEUR);
-
-            retrievedAmountsFaultyAccountNumber.put("FaultyAccCreditFL",
-                    faultyAccRecordAmountCreditFL);
-            retrievedAmountsFaultyAccountNumber.put("FaultyAccCreditUSD",
-                    faultyAccRecordAmountCreditUSD);
-            retrievedAmountsFaultyAccountNumber.put("FaultyAccCreditEUR",
-                    faultyAccRecordAmountCreditEUR);
-
         }
+    }
+
+
+    // Calculate sum amount from faultyAccountnumber list
+    private Map<String, BigDecimal> calculateAmountsFaultyAccountNumber(
+            List<TempRecord> faultyAccountNumberRecordList, Client client) {
+
+        Tally tally = new Tally();
+        for (TempRecord faultyAccountNumberRecord : faultyAccountNumberRecordList) {
+            fixSignAndCurrencyCode(client, faultyAccountNumberRecord);
+            tally.addTempRecord(faultyAccountNumberRecord);
+        }
+
+        Map<String, BigDecimal> retrievedAmountsFaultyAccountNumber = new HashMap<>();
+        retrievedAmountsFaultyAccountNumber.put("FaultyAccDebitFL", tally.faultyAccRecordAmountDebitFL);
+        retrievedAmountsFaultyAccountNumber.put("FaultyAccDebitUSD", tally.faultyAccRecordAmountDebitUSD);
+        retrievedAmountsFaultyAccountNumber.put("FaultyAccDebitEUR", tally.faultyAccRecordAmountDebitEUR);
+        retrievedAmountsFaultyAccountNumber.put("FaultyAccCreditFL", tally.faultyAccRecordAmountCreditFL);
+        retrievedAmountsFaultyAccountNumber.put("FaultyAccCreditUSD", tally.faultyAccRecordAmountCreditUSD);
+        retrievedAmountsFaultyAccountNumber.put("FaultyAccCreditEUR", tally.faultyAccRecordAmountCreditEUR);
+
         return retrievedAmountsFaultyAccountNumber;
+    }
+
+    private void fixSignAndCurrencyCode(Client client, TempRecord faultyAccountNumberRecord) {
+        if (StringUtils.isBlank(faultyAccountNumberRecord.getSign())) {
+            faultyAccountNumberRecord.setSign(client.getCreditDebit());
+        }
+
+        if (faultyAccountNumberRecord.getCurrencyCode() == null) {
+            String currencyId = currencyDao.retrieveCurrencyDefault(client.getProfile());
+            Currency currency = currencyDao.retrieveCurrencyOnId(new Integer(currencyId));
+            faultyAccountNumberRecord.setCurrencyCode(currency.getCode());
+        }
     }
 
     private Map<String, BigDecimal> calculateRetrieveAmounts(
