@@ -1,8 +1,10 @@
 package com.example.domain;
 
+import com.example.record.domain.RecordInterface;
+
 import java.math.BigDecimal;
 
-public class Record {
+public class Record implements RecordInterface {
     Bank bank;
     String beneficiaryAccountNumber;
     String beneficiaryName;

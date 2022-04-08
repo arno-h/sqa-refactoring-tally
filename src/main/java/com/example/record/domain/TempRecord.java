@@ -4,7 +4,7 @@ import com.example.domain.Currency;
 
 import java.math.BigDecimal;
 
-public class TempRecord {
+public class TempRecord implements RecordInterface {
     String sign;
     Currency currency;
     BigDecimal amount;
@@ -17,6 +17,10 @@ public class TempRecord {
 
     public String getSign() {
         return sign;
+    }
+
+    public Currency getCurrency() {
+        return currency;
     }
 
     public void setSign(String sign) {
